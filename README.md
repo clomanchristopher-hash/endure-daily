@@ -39,59 +39,76 @@ src/
     favorites/              Favorites
     profile/                Profile
     admin/                  Admin Dashboard
+    signup/ login/          Auth screens
+    forgot-password/ reset-password/
   components/
     layout/                 SideNav, BottomNav, TopBar, nav-items
     ui/                     Card, Button, Badge, ModeToggle, StreakBadge, PremiumLockCard
     home/                    Greeting, DailyProgressCard, ReflectionCard (Home-only pieces)
+    auth/                    AuthLayout, FormField, FormMessage, AccountSection
     devotion/                DevotionCard, DevotionDetailClient
     plans/                   PlanCard, PlanDetailClient
     journal/                 JournalPageClient
   context/
-    AppStateContext.tsx      Client-side "database": profile, favorites, streak,
-                              journal entries, admin devotion overrides — all persisted
-                              to localStorage
+    AuthContext.tsx          Supabase session + auth methods (no-op offline)
+    AppStateContext.tsx      App "database": profile, favorites, streak, checklist,
+                              reflections, journal, admin overrides — localStorage first,
+                              synced to Supabase when signed in
   lib/
     data/devotions.ts         Seed devotion data (12 entries) + daily rotation helper
     data/plans.ts              Seed plan data (5 plans)
     data/challenges.ts          General daily challenges + daily rotation helper
     motivation.ts               Theme + mode -> workout motivation copy
     storage.ts                   localStorage read/write helpers
+    supabase/client.ts           Env-guarded Supabase browser client
+    supabase/schema.sql          Run this once in the Supabase SQL editor
   types/index.ts                Shared TypeScript types (Devotion, Plan, JournalEntry, UserProfile)
 ```
 
-## How data works today
+## Authentication & data (Supabase)
 
-Everything is local:
+The app has **optional** Supabase auth + sync. With no env vars it runs in **offline mode**
+(everything in `localStorage`, single anonymous user). Add credentials to enable accounts and
+cross-device sync. Either way, `localStorage` stays the offline fallback — the app never breaks
+when the network or Supabase is unavailable.
 
-- **Devotions & Plans** ship as static arrays in `src/lib/data/`.
-- **Admin edits** (add/edit/delete) are stored as an "overrides" map + a deleted-id list in
-  `localStorage`, and merged with the seed data at read time
-  (`AppStateContext.tsx` → `mergeDevotions`). This means the original seed file is never
-  mutated — admin changes are a diff layer on top of it.
-- **Profile, favorites, streak, plan progress, and journal entries** all live in
-  `localStorage` under the `endure-daily:` prefix (see `src/lib/storage.ts`).
-- **Streak** is recalculated once per session on mount by comparing the last visit date to
-  today/yesterday — no manual "check-in" button required.
+### Enable it
 
-## Connecting Supabase later
+1. Create a project at [supabase.com](https://supabase.com).
+2. Run `src/lib/supabase/schema.sql` in the Supabase SQL editor (Dashboard → SQL → New query).
+   It creates the tables, row-level-security policies, and a trigger that auto-creates a
+   profile row on signup. Safe to re-run.
+3. Copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_SUPABASE_URL` and
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase → Project Settings → API).
+4. (Optional) In Supabase → Authentication → URL Configuration, add your site URL and
+   `…/reset-password` as redirect URLs so the password-reset email links back correctly.
+5. Restart `npm run dev`.
 
-The local layer was written so the swap is mechanical, not a rewrite:
+### What syncs
 
-1. **Types stay the same.** `src/types/index.ts` already mirrors what your Supabase tables
-   should look like: `devotions`, `plans`, `journal_entries`, and a `profiles` table
-   (favorites/streak/plan_progress can stay JSON columns or become their own tables).
-2. **Replace `src/lib/data/*.ts` reads** with Supabase queries (e.g. `supabase.from('devotions').select()`),
-   or keep them as a fallback/seed script for `supabase db seed`.
-3. **Replace `src/lib/storage.ts`** with a Supabase-backed equivalent (e.g. `getProfile` /
-   `upsertProfile` calling the client), and swap `AppStateContext`'s `useEffect` hydration
-   step for a fetch against the authenticated user's row instead of `readJSON`.
-4. **Admin Dashboard** already isolates all mutations behind `adminAddDevotion` /
-   `adminUpdateDevotion` / `adminDeleteDevotion` in `AppStateContext` — point those at
-   `supabase.from('devotions').insert/update/delete` instead of the overrides map.
-5. Add Supabase Auth for real user accounts (the app currently assumes a single anonymous
-   local user).
+| Data                                   | Where it lives                          |
+| -------------------------------------- | --------------------------------------- |
+| Name, email, mode (leisure/athlete)    | `profiles` table + auth user            |
+| Streak / longest streak                | `profiles` table                        |
+| Favorites                              | `favorites` table                       |
+| Daily checklist (+ history for totals) | `daily_progress` table                  |
+| Home reflection answers                | `reflections` table                     |
+| Plans progress, admin edits, Journal   | `localStorage` only (future sprint)     |
 
-No page or component needs to change — they all go through `useAppState()`.
+### How it works
+
+- `src/lib/supabase/client.ts` builds the browser client **only if** the env vars exist;
+  otherwise it exports `null` and `isSupabaseConfigured = false`.
+- `src/context/AuthContext.tsx` owns the session and the `signUp` / `signIn` / `signOut` /
+  `requestPasswordReset` / `updatePassword` methods, with friendly error messages. Every method
+  no-ops with a friendly notice when Supabase isn't configured.
+- `src/context/AppStateContext.tsx` loads from `localStorage` first (fast, offline), then — if
+  signed in — hydrates from Supabase and mirrors every write back to it. All mutators use
+  functional state updates so rapid taps never clobber each other.
+- Auth screens live at `/signup`, `/login`, `/forgot-password`, `/reset-password`.
+
+Admin content (devotions/plans) is still seeded from `src/lib/data/` and layered with a
+local overrides map — that's intentionally not user-synced.
 
 ## Design
 

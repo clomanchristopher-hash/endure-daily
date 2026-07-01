@@ -4,7 +4,9 @@ import Link from "next/link";
 import {
   Bell,
   BookOpenText,
+  CheckCircle2,
   Crown,
+  Dumbbell,
   Flame,
   Heart,
   NotebookPen,
@@ -16,9 +18,11 @@ import { useAppState } from "@/context/AppStateContext";
 import { Card } from "@/components/ui/Card";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { PremiumLockCard } from "@/components/ui/PremiumLockCard";
+import { AccountSection } from "@/components/auth/AccountSection";
 
 export default function ProfilePage() {
-  const { profile, journalEntries, updateDisplayName } = useAppState();
+  const { profile, journalEntries, updateDisplayName, totalDevotionDays, totalWorkouts } =
+    useAppState();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
@@ -42,7 +46,10 @@ export default function ProfilePage() {
         </div>
       </Card>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      {/* Account: sign in / out and email (syncs when Supabase is connected) */}
+      <AccountSection />
+
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="flex flex-col items-center justify-center gap-1 py-5 text-center">
           <Flame size={20} className="text-ember" />
           <p className="text-2xl font-bold text-foreground">{profile.streak}</p>
@@ -52,6 +59,16 @@ export default function ProfilePage() {
           <Trophy size={20} className="text-gold-soft" />
           <p className="text-2xl font-bold text-foreground">{profile.longest_streak}</p>
           <p className="text-xs text-muted">Longest Streak</p>
+        </Card>
+        <Card className="flex flex-col items-center justify-center gap-1 py-5 text-center">
+          <CheckCircle2 size={20} className="text-evergreen" />
+          <p className="text-2xl font-bold text-foreground">{totalDevotionDays}</p>
+          <p className="text-xs text-muted">Devotion Days</p>
+        </Card>
+        <Card className="flex flex-col items-center justify-center gap-1 py-5 text-center">
+          <Dumbbell size={20} className="text-gold-soft" />
+          <p className="text-2xl font-bold text-foreground">{totalWorkouts}</p>
+          <p className="text-xs text-muted">Workouts Done</p>
         </Card>
       </div>
 

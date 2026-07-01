@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import { AppStateProvider } from "@/context/AppStateContext";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { SideNav } from "@/components/layout/SideNav";
@@ -40,16 +41,18 @@ export default function RootLayout({
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <AppStateProvider>
-          <div className="mx-auto flex w-full max-w-7xl flex-1">
-            <SideNav />
-            <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-              <TopBar />
-              <main className="flex-1 pb-24 md:pb-10">{children}</main>
+        <AuthProvider>
+          <AppStateProvider>
+            <div className="mx-auto flex w-full max-w-7xl flex-1">
+              <SideNav />
+              <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+                <TopBar />
+                <main className="flex-1 pb-24 md:pb-10">{children}</main>
+              </div>
             </div>
-          </div>
-          <BottomNav />
-        </AppStateProvider>
+            <BottomNav />
+          </AppStateProvider>
+        </AuthProvider>
       </body>
     </html>
   );

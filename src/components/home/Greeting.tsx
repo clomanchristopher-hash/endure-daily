@@ -11,9 +11,11 @@ function timeGreeting(): string {
 
 export function Greeting() {
   const { ready, profile } = useAppState();
+  // Show just the first name — "Good Morning, Chris" rather than the full name.
+  const firstName = profile.display_name.trim().split(/\s+/)[0] || "Friend";
   // Time- and profile-based content is client-only; before hydration we show a
   // neutral heading so server and client markup match.
-  const greeting = ready ? `${timeGreeting()}, ${profile.display_name}` : "Welcome";
+  const greeting = ready ? `${timeGreeting()}, ${firstName}` : "Welcome";
 
   return (
     <div>
