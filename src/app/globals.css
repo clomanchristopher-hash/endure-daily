@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b1120;
+  --surface: #131c30;
+  --surface-raised: #1a2540;
+  --border-subtle: #263252;
+  --foreground: #f4f1ea;
+  --muted: #97a3bf;
+  --gold: #e3b341;
+  --gold-soft: #f2cf7a;
+  --ember: #e0654a;
+  --evergreen: #4f9d7a;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border-subtle: var(--border-subtle);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-ember: var(--ember);
+  --color-evergreen: var(--evergreen);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-fraunces);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, .font-serif {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+::selection {
+  background: var(--gold);
+  color: #14100a;
+}
+
+.admin-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  outline: none;
+}
+
+.admin-input:focus {
+  border-color: color-mix(in srgb, var(--gold) 50%, transparent);
 }

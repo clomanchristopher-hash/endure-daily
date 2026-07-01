@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Endure Daily
+
+A mobile-first faith and fitness devotional web app. Daily Scripture, a short devotion,
+prayer, reflection question, workout motivation, and a movement challenge — for Christians
+who want to grow spiritually and physically, whether that's a casual walk or a competitive
+training session.
+
+Built with Next.js (App Router), React, TypeScript, and Tailwind CSS. Data currently lives
+in local files + `localStorage`, structured so it can be swapped for Supabase later without
+touching the UI (see below).
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The bottom nav (mobile) / left sidebar
+(desktop, ≥768px) covers all 8 pages: Home, Library, Fitness, Plans, Journal, Favorites,
+Profile, and Admin.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build
+npm run start   # run the production build
+npm run lint    # eslint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+src/
+  app/                     Routes (App Router)
+    page.tsx               Home / Today's Devotion
+    library/                Devotion Library (+ /library/[id] detail)
+    fitness/                Fitness Motivation
+    plans/                  Plans (+ /plans/[id] detail)
+    journal/                Journal
+    favorites/              Favorites
+    profile/                Profile
+    admin/                  Admin Dashboard
+  components/
+    layout/                 SideNav, BottomNav, TopBar, nav-items
+    ui/                     Card, Button, Badge, ModeToggle, StreakBadge, PremiumLockCard
+    devotion/                DevotionCard, DevotionDetailClient
+    plans/                   PlanCard, PlanDetailClient
+    journal/                 JournalPageClient
+  context/
+    AppStateContext.tsx      Client-side "database": profile, favorites, streak,
+                              journal entries, admin devotion overrides — all persisted
+                              to localStorage
+  lib/
+    data/devotions.ts         Seed devotion data (12 entries) + daily rotation helper
+    data/plans.ts              Seed plan data (5 plans)
+    motivation.ts               Theme + mode -> workout motivation copy
+    storage.ts                   localStorage read/write helpers
+  types/index.ts                Shared TypeScript types (Devotion, Plan, JournalEntry, UserProfile)
+```
 
-To learn more about Next.js, take a look at the following resources:
+## How data works today
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Everything is local:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Devotions & Plans** ship as static arrays in `src/lib/data/`.
+- **Admin edits** (add/edit/delete) are stored as an "overrides" map + a deleted-id list in
+  `localStorage`, and merged with the seed data at read time
+  (`AppStateContext.tsx` → `mergeDevotions`). This means the original seed file is never
+  mutated — admin changes are a diff layer on top of it.
+- **Profile, favorites, streak, plan progress, and journal entries** all live in
+  `localStorage` under the `endure-daily:` prefix (see `src/lib/storage.ts`).
+- **Streak** is recalculated once per session on mount by comparing the last visit date to
+  today/yesterday — no manual "check-in" button required.
 
-## Deploy on Vercel
+## Connecting Supabase later
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The local layer was written so the swap is mechanical, not a rewrite:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Types stay the same.** `src/types/index.ts` already mirrors what your Supabase tables
+   should look like: `devotions`, `plans`, `journal_entries`, and a `profiles` table
+   (favorites/streak/plan_progress can stay JSON columns or become their own tables).
+2. **Replace `src/lib/data/*.ts` reads** with Supabase queries (e.g. `supabase.from('devotions').select()`),
+   or keep them as a fallback/seed script for `supabase db seed`.
+3. **Replace `src/lib/storage.ts`** with a Supabase-backed equivalent (e.g. `getProfile` /
+   `upsertProfile` calling the client), and swap `AppStateContext`'s `useEffect` hydration
+   step for a fetch against the authenticated user's row instead of `readJSON`.
+4. **Admin Dashboard** already isolates all mutations behind `adminAddDevotion` /
+   `adminUpdateDevotion` / `adminDeleteDevotion` in `AppStateContext` — point those at
+   `supabase.from('devotions').insert/update/delete` instead of the overrides map.
+5. Add Supabase Auth for real user accounts (the app currently assumes a single anonymous
+   local user).
+
+No page or component needs to change — they all go through `useAppState()`.
+
+## Design
+
+- Dark, masculine, faith-centered palette (navy background, warm gold accent, ember/evergreen
+  for status) — see CSS variables in `src/app/globals.css`.
+- `Fraunces` (serif) for headings, `Inter` for body — set up in `src/app/layout.tsx`.
+- Mobile-first: bottom nav + "More" sheet under 768px, full sidebar above.
+
+## Premium placeholders
+
+Profile page includes "Coming Soon" cards for: Premium Devotion Plans, Team Devotion Packs,
+Prayer Reminders, Stripe Subscription, and Coach/Team Dashboard. These are UI-only stubs
+(`PremiumLockCard`) with no backend wired up yet.
+
+## Deploying
+
+This is a standard Next.js app — deploys as-is to Vercel, or anywhere that supports Node.
+No environment variables are required until Supabase/Stripe are wired in.
