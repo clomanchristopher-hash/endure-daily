@@ -39,6 +39,21 @@ export interface JournalEntry {
   created_at: string; // ISO timestamp
 }
 
+// Self-reported daily checklist on the Home screen. Resets each new day.
+export interface DailyProgress {
+  scripture: boolean;
+  devotion: boolean;
+  prayer: boolean;
+  workout: boolean;
+}
+
+export const DAILY_PROGRESS_ITEMS: { key: keyof DailyProgress; label: string }[] = [
+  { key: "scripture", label: "Read Scripture" },
+  { key: "devotion", label: "Read Devotion" },
+  { key: "prayer", label: "Prayer Time" },
+  { key: "workout", label: "Workout Complete" },
+];
+
 export interface UserProfile {
   display_name: string;
   mode: UserMode;

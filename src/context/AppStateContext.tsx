@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Devotion, JournalEntry, UserMode, UserProfile } from "@/types";
+import { DailyProgress, Devotion, JournalEntry, UserMode, UserProfile } from "@/types";
 import { devotions as seedDevotions } from "@/lib/data/devotions";
 import { readJSON, todayKey, writeJSON, yesterdayKey } from "@/lib/storage";
 
@@ -16,6 +16,8 @@ const PROFILE_KEY = "profile";
 const JOURNAL_KEY = "journal";
 const DEVOTION_OVERRIDES_KEY = "devotion-overrides";
 const DEVOTION_DELETED_KEY = "devotion-deleted-ids";
+const DAILY_PROGRESS_KEY = "daily-progress";
+const DAILY_REFLECTIONS_KEY = "daily-reflections";
 
 const defaultProfile: UserProfile = {
   display_name: "Friend",
@@ -28,11 +30,29 @@ const defaultProfile: UserProfile = {
   plan_progress: {},
 };
 
+const defaultProgress: DailyProgress = {
+  scripture: false,
+  devotion: false,
+  prayer: false,
+  workout: false,
+};
+
+// Progress is stamped with the day it belongs to so it resets automatically
+// when a new day begins.
+interface StoredProgress {
+  date: string;
+  progress: DailyProgress;
+}
+
 interface AppStateValue {
   ready: boolean;
   profile: UserProfile;
   devotions: Devotion[];
   journalEntries: JournalEntry[];
+  dailyProgress: DailyProgress;
+  dailyReflections: Record<string, string>;
+  toggleDailyProgress: (key: keyof DailyProgress) => void;
+  saveDailyReflection: (date: string, text: string) => void;
   setMode: (mode: UserMode) => void;
   updateDisplayName: (name: string) => void;
   isFavorite: (devotionId: string) => boolean;
@@ -65,6 +85,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [overrides, setOverrides] = useState<Record<string, Devotion>>({});
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const [dailyProgress, setDailyProgress] = useState<DailyProgress>(defaultProgress);
+  const [dailyReflections, setDailyReflections] = useState<Record<string, string>>({});
 
   // Load persisted state once on mount, then reconcile the daily streak.
   // localStorage isn't available during SSR, so this must run post-mount;
@@ -93,14 +115,42 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       last_visit_date: today,
     };
 
+    // Daily progress resets automatically when the stored day is no longer today.
+    const storedProgress = readJSON<StoredProgress>(DAILY_PROGRESS_KEY, {
+      date: today,
+      progress: defaultProgress,
+    });
+    const progress =
+      storedProgress.date === today ? storedProgress.progress : defaultProgress;
+    const storedReflections = readJSON<Record<string, string>>(DAILY_REFLECTIONS_KEY, {});
+
     setProfile(reconciled);
     setJournalEntries(storedJournal);
     setOverrides(storedOverrides);
     setDeletedIds(storedDeleted);
+    setDailyProgress(progress);
+    setDailyReflections(storedReflections);
     writeJSON(PROFILE_KEY, reconciled);
+    writeJSON(DAILY_PROGRESS_KEY, { date: today, progress });
     setReady(true);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
+
+  const toggleDailyProgress = useCallback((key: keyof DailyProgress) => {
+    setDailyProgress((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      writeJSON<StoredProgress>(DAILY_PROGRESS_KEY, { date: todayKey(), progress: next });
+      return next;
+    });
+  }, []);
+
+  const saveDailyReflection = useCallback((date: string, text: string) => {
+    setDailyReflections((prev) => {
+      const next = { ...prev, [date]: text };
+      writeJSON(DAILY_REFLECTIONS_KEY, next);
+      return next;
+    });
+  }, []);
 
   const persistProfile = useCallback((next: UserProfile) => {
     setProfile(next);
@@ -229,6 +279,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     profile,
     devotions,
     journalEntries,
+    dailyProgress,
+    dailyReflections,
+    toggleDailyProgress,
+    saveDailyReflection,
     setMode,
     updateDisplayName,
     isFavorite,

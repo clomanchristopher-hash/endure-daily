@@ -42,6 +42,7 @@ src/
   components/
     layout/                 SideNav, BottomNav, TopBar, nav-items
     ui/                     Card, Button, Badge, ModeToggle, StreakBadge, PremiumLockCard
+    home/                    Greeting, DailyProgressCard, ReflectionCard (Home-only pieces)
     devotion/                DevotionCard, DevotionDetailClient
     plans/                   PlanCard, PlanDetailClient
     journal/                 JournalPageClient
@@ -52,6 +53,7 @@ src/
   lib/
     data/devotions.ts         Seed devotion data (12 entries) + daily rotation helper
     data/plans.ts              Seed plan data (5 plans)
+    data/challenges.ts          General daily challenges + daily rotation helper
     motivation.ts               Theme + mode -> workout motivation copy
     storage.ts                   localStorage read/write helpers
   types/index.ts                Shared TypeScript types (Devotion, Plan, JournalEntry, UserProfile)

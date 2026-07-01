@@ -2,19 +2,24 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { BookOpenText, Dumbbell, Flame, Heart, NotebookPen, Sparkles } from "lucide-react";
+import { BookOpenText, Dumbbell, Flame, Heart, Sparkles, Target } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { getDevotionForDate } from "@/lib/data/devotions";
+import { getChallengeForDate } from "@/lib/data/challenges";
 import { getWorkoutMotivation } from "@/lib/motivation";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ModeToggle } from "@/components/ui/ModeToggle";
+import { Greeting } from "@/components/home/Greeting";
+import { DailyProgressCard } from "@/components/home/DailyProgressCard";
+import { ReflectionCard } from "@/components/home/ReflectionCard";
 
 export default function HomePage() {
   const { ready, profile, devotions, isFavorite, toggleFavorite } = useAppState();
 
   const devotion = useMemo(() => getDevotionForDate(new Date(), devotions), [devotions]);
+  const dailyChallenge = useMemo(() => getChallengeForDate(new Date()), []);
   const challenge =
     profile.mode === "athlete" ? devotion.athlete_challenge : devotion.leisure_challenge;
   const motivation = getWorkoutMotivation(devotion.theme, profile.mode);
@@ -28,17 +33,20 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* 1. Greeting */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm text-muted">{todayLabel}</p>
-          <h1 className="font-serif text-2xl font-bold text-foreground">
-            Today&apos;s Devotion
-          </h1>
+          <Greeting />
         </div>
         <ModeToggle />
       </div>
 
-      <Card className="mt-5 bg-gradient-to-br from-surface-raised to-surface">
+      {/* 2. Daily Progress */}
+      <DailyProgressCard />
+
+      {/* 3. Theme of the Day */}
+      <Card className="mt-4 bg-gradient-to-br from-surface-raised to-surface">
         <div className="flex items-center justify-between">
           <Badge tone="gold">
             <Sparkles size={12} /> Theme of the Day
@@ -54,6 +62,7 @@ export default function HomePage() {
         <p className="mt-1 font-serif text-lg text-gold-soft">{devotion.title}</p>
       </Card>
 
+      {/* 4. Scripture */}
       <Card className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">
           Scripture of the Day
@@ -66,32 +75,35 @@ export default function HomePage() {
         </p>
       </Card>
 
+      {/* 5. Devotion */}
       <Card className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Devotion
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Devotion</p>
         <p className="mt-2 leading-relaxed text-foreground/90">{devotion.devotion_text}</p>
       </Card>
 
+      {/* 6. Prayer */}
       <Card className="mt-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Prayer</p>
-        <p className="mt-2 leading-relaxed text-foreground/90">{devotion.prayer}</p>
-      </Card>
-
-      <Card className="mt-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Reflection Question
+        <p className="mt-2 whitespace-pre-line leading-relaxed text-foreground/90">
+          {devotion.prayer}
         </p>
-        <p className="mt-2 font-serif text-lg text-foreground">{devotion.reflection_question}</p>
-        <Link
-          href={`/journal?devotionId=${devotion.id}`}
-          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-soft hover:text-gold"
-        >
-          <NotebookPen size={15} />
-          Write your reflection
-        </Link>
       </Card>
 
+      {/* 7. Reflection */}
+      <ReflectionCard
+        question={devotion.reflection_question}
+        journalHref={`/journal?devotionId=${devotion.id}`}
+      />
+
+      {/* 8. Daily Challenge */}
+      <Card className="mt-4 border-gold/30 bg-gold/5">
+        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-soft">
+          <Target size={13} /> Today&apos;s Challenge
+        </p>
+        <p className="mt-2 font-serif text-lg leading-snug text-foreground">{dailyChallenge}</p>
+      </Card>
+
+      {/* Existing: Workout Motivation */}
       <Card className="mt-4">
         <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted">
           <Dumbbell size={13} /> Workout Motivation
@@ -99,6 +111,7 @@ export default function HomePage() {
         <p className="mt-2 font-serif text-lg leading-snug text-foreground">{motivation}</p>
       </Card>
 
+      {/* Existing: Daily Movement Challenge (Leisure / Athlete) */}
       <Card className="mt-4 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-soft">
@@ -111,6 +124,7 @@ export default function HomePage() {
         <p className="mt-2 leading-relaxed text-foreground">{challenge}</p>
       </Card>
 
+      {/* Existing: Favorites / Library actions */}
       <div className="mt-5 flex gap-3">
         <Button
           variant={favorited ? "primary" : "outline"}
