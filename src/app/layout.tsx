@@ -6,6 +6,7 @@ import { AppStateProvider } from "@/context/AppStateContext";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { SideNav } from "@/components/layout/SideNav";
 import { TopBar } from "@/components/layout/TopBar";
+import { SplashScreen } from "@/components/SplashScreen";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -41,6 +42,7 @@ export default function RootLayout({
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <SplashScreen />
         <AuthProvider>
           <AppStateProvider>
             <div className="mx-auto flex w-full max-w-7xl flex-1">
