@@ -181,7 +181,7 @@ export default function AdminPage() {
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Leisure Challenge">
+              <Field label="Gentle Challenge">
                 <textarea
                   required
                   rows={2}
@@ -190,7 +190,7 @@ export default function AdminPage() {
                   className="admin-input resize-none"
                 />
               </Field>
-              <Field label="Athlete Challenge">
+              <Field label="Active Challenge">
                 <textarea
                   required
                   rows={2}

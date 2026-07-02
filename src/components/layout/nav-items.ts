@@ -12,7 +12,7 @@ import {
 export const primaryNavItems = [
   { href: "/", label: "Today", icon: Home },
   { href: "/library", label: "Library", icon: BookOpenText },
-  { href: "/fitness", label: "Fitness", icon: Dumbbell },
+  { href: "/fitness", label: "Move", icon: Dumbbell },
   { href: "/plans", label: "Plans", icon: Flame },
 ];
 

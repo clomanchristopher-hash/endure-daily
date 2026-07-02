@@ -111,14 +111,14 @@ export default function HomePage() {
         <p className="mt-2 font-serif text-lg leading-snug text-foreground">{motivation}</p>
       </Card>
 
-      {/* Existing: Daily Movement Challenge (Leisure / Athlete) */}
+      {/* Existing: Daily Movement Challenge (Gentle / Active) */}
       <Card className="mt-4 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-soft">
             <Flame size={13} /> Daily Movement Challenge
           </p>
           <Badge tone={profile.mode === "athlete" ? "ember" : "evergreen"}>
-            {profile.mode === "athlete" ? "Athlete" : "Leisure"}
+            {profile.mode === "athlete" ? "Active" : "Gentle"}
           </Badge>
         </div>
         <p className="mt-2 leading-relaxed text-foreground">{challenge}</p>

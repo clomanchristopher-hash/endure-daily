@@ -53,7 +53,7 @@ export default function FitnessPage() {
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-foreground">Fitness</h1>
+          <h1 className="font-serif text-2xl font-bold text-foreground">Move</h1>
           <p className="mt-1 text-sm text-muted">One assignment. Move with purpose.</p>
         </div>
         <ModeToggle />
@@ -107,6 +107,8 @@ export default function FitnessPage() {
           );
         })}
       </div>
+
+      <p className="mt-3 text-center text-xs text-muted">One faithful step counts.</p>
     </div>
   );
 }

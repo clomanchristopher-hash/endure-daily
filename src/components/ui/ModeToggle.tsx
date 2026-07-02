@@ -15,7 +15,7 @@ export function ModeToggle({ className = "" }: { className?: string }) {
           profile.mode === "leisure" ? "bg-gold text-[#0d1510]" : "text-muted"
         }`}
       >
-        Leisure
+        Gentle
       </button>
       <button
         onClick={() => setMode("athlete")}
@@ -23,7 +23,7 @@ export function ModeToggle({ className = "" }: { className?: string }) {
           profile.mode === "athlete" ? "bg-gold text-[#0d1510]" : "text-muted"
         }`}
       >
-        Athlete
+        Active
       </button>
     </div>
   );
