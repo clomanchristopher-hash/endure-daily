@@ -41,7 +41,7 @@ export function DailyProgressCard() {
             >
               <span
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
-                  done ? "border-gold bg-gold text-[#1a1204]" : "border-border-subtle"
+                  done ? "border-gold bg-gold text-[#0d1510]" : "border-border-subtle"
                 }`}
               >
                 {done && <Check size={14} strokeWidth={3} />}

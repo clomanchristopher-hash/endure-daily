@@ -51,7 +51,7 @@ export default function LibraryPage() {
         <button
           onClick={() => setActiveTag(null)}
           className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            activeTag === null ? "bg-gold text-[#1a1204]" : "bg-surface-raised text-muted"
+            activeTag === null ? "bg-gold text-[#0d1510]" : "bg-surface-raised text-muted"
           }`}
         >
           All
@@ -61,7 +61,7 @@ export default function LibraryPage() {
             key={tag}
             onClick={() => setActiveTag(tag === activeTag ? null : tag)}
             className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              activeTag === tag ? "bg-gold text-[#1a1204]" : "bg-surface-raised text-muted"
+              activeTag === tag ? "bg-gold text-[#0d1510]" : "bg-surface-raised text-muted"
             }`}
           >
             #{tag}

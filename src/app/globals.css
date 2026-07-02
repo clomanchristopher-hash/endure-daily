@@ -1,16 +1,33 @@
 @import "tailwindcss";
 
+/*
+  Earth-tone theme — deep forest / olive / sage / cream.
+  The legacy variable names (--gold, --ember, --evergreen) are kept so every
+  component inherits the new palette without renaming classes app-wide:
+    --gold       -> sage green   (primary accent, active states, buttons)
+    --gold-soft  -> soft accent  (accent text, headings highlight)
+    --ember      -> warm clay     (streak flame, destructive)
+    --evergreen  -> leaf olive    (success, leisure)
+*/
 :root {
-  --background: #0b1120;
-  --surface: #131c30;
-  --surface-raised: #1a2540;
-  --border-subtle: #263252;
-  --foreground: #f4f1ea;
-  --muted: #97a3bf;
-  --gold: #e3b341;
-  --gold-soft: #f2cf7a;
-  --ember: #e0654a;
-  --evergreen: #4f9d7a;
+  --background: #0d1510;
+  --surface: #142217;
+  --surface-raised: #1b2d20;
+  --border-subtle: rgba(143, 175, 122, 0.25);
+  --foreground: #f4f1e6;
+  --muted: #9da88c;
+
+  --gold: #8faf7a;
+  --gold-soft: #b8d99a;
+  --ember: #c67b5c;
+  --evergreen: #7fa05f;
+
+  /* Extra semantic greens for newer UI (splash plant, fitness chips). */
+  --primary: #244d2b;
+  --olive: #4f6f3a;
+  --sage: #8faf7a;
+  --accent: #b8d99a;
+  --cream: #f4f1e6;
 }
 
 @theme inline {
@@ -24,6 +41,11 @@
   --color-gold-soft: var(--gold-soft);
   --color-ember: var(--ember);
   --color-evergreen: var(--evergreen);
+  --color-primary: var(--primary);
+  --color-olive: var(--olive);
+  --color-sage: var(--sage);
+  --color-accent: var(--accent);
+  --color-cream: var(--cream);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-fraunces);
 }
@@ -40,7 +62,19 @@ h1, h2, h3, .font-serif {
 
 ::selection {
   background: var(--gold);
-  color: #14100a;
+  color: #0d1510;
+}
+
+/* Subtle, slow upward "grow" for the splash-screen sprout. */
+@keyframes sproutRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .admin-input {

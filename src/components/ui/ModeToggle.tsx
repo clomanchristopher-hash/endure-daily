@@ -12,7 +12,7 @@ export function ModeToggle({ className = "" }: { className?: string }) {
       <button
         onClick={() => setMode("leisure")}
         className={`rounded-full px-4 py-1.5 transition-colors ${
-          profile.mode === "leisure" ? "bg-gold text-[#1a1204]" : "text-muted"
+          profile.mode === "leisure" ? "bg-gold text-[#0d1510]" : "text-muted"
         }`}
       >
         Leisure
@@ -20,7 +20,7 @@ export function ModeToggle({ className = "" }: { className?: string }) {
       <button
         onClick={() => setMode("athlete")}
         className={`rounded-full px-4 py-1.5 transition-colors ${
-          profile.mode === "athlete" ? "bg-gold text-[#1a1204]" : "text-muted"
+          profile.mode === "athlete" ? "bg-gold text-[#0d1510]" : "text-muted"
         }`}
       >
         Athlete
