@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { primaryNavItems, secondaryNavItems } from "./nav-items";
+import { FeedbackButton } from "@/components/FeedbackButton";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -55,6 +56,8 @@ export function BottomNav() {
                 );
               })}
             </div>
+
+            <FeedbackButton className="mt-4 border-t border-border-subtle pt-4" />
           </div>
         </div>
       )}

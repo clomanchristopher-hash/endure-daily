@@ -56,7 +56,7 @@ export const plans: Plan[] = [
   {
     id: "beginner-fitness",
     title: "Beginner Fitness Devotions",
-    subtitle: "Gentle, encouraging first steps",
+    subtitle: "Encouraging first steps, no pressure",
     description:
       "For those just getting started with movement. No pressure, no comparison — just steady encouragement to build a sustainable habit one day at a time.",
     duration_days: 10,

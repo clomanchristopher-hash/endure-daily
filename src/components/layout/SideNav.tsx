@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Cross } from "lucide-react";
 import { primaryNavItems, secondaryNavItems } from "./nav-items";
+import { FeedbackButton } from "@/components/FeedbackButton";
 
 export function SideNav() {
   const pathname = usePathname();
@@ -37,6 +38,8 @@ export function SideNav() {
           <NavLink key={item.href} item={item} active={pathname === item.href} />
         ))}
       </nav>
+
+      <FeedbackButton className="mb-3" />
 
       <div className="rounded-xl border border-border-subtle bg-surface-raised p-3 text-xs text-muted">
         <p className="font-semibold text-gold-soft">Endure Daily</p>

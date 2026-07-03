@@ -72,7 +72,7 @@ export function DevotionDetailClient({ id }: { id: string }) {
 
       <Card className="mt-4 border-gold/30 bg-gold/5">
         <p className="text-xs font-semibold uppercase tracking-wider text-gold-soft">
-          {profile.mode === "athlete" ? "Active Challenge" : "Gentle Challenge"}
+          {profile.mode === "athlete" ? "Challenge" : "Foundation"}
         </p>
         <p className="mt-2 leading-relaxed text-foreground">{challenge}</p>
       </Card>
