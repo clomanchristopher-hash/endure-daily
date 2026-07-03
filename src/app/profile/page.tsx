@@ -141,6 +141,10 @@ export default function ProfilePage() {
           description="Coaches can assign devotions and track team engagement."
         />
       </div>
+
+      <p className="mt-10 border-t border-border-subtle pt-6 text-center text-xs text-muted">
+        Scripture quotations are from the Berean Standard Bible (BSB).
+      </p>
     </div>
   );
 }

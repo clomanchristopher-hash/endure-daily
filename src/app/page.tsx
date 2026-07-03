@@ -70,9 +70,12 @@ export default function HomePage() {
         <blockquote className="mt-2 border-l-2 border-gold pl-4 font-serif text-lg italic leading-relaxed text-foreground">
           &ldquo;{devotion.scripture_text}&rdquo;
         </blockquote>
-        <p className="mt-2 text-sm font-semibold text-gold-soft">
-          {devotion.scripture_reference}
-        </p>
+        <div className="mt-2 flex items-center gap-2">
+          <p className="text-sm font-semibold text-gold-soft">{devotion.scripture_reference}</p>
+          <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted">
+            BSB
+          </span>
+        </div>
       </Card>
 
       {/* 5. Devotion */}

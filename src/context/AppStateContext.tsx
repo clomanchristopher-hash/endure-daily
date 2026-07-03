@@ -26,6 +26,7 @@ const DEVOTION_OVERRIDES_KEY = "devotion-overrides";
 const DEVOTION_DELETED_KEY = "devotion-deleted-ids";
 const DAILY_PROGRESS_HISTORY_KEY = "daily-progress-history";
 const DAILY_REFLECTIONS_KEY = "daily-reflections";
+const CELEBRATION_KEY = "celebration-shown-date";
 
 const defaultProfile: UserProfile = {
   display_name: "Friend",
@@ -82,6 +83,9 @@ interface AppStateValue {
   dailyReflections: Record<string, string>;
   totalDevotionDays: number;
   totalWorkouts: number;
+  allProgressComplete: boolean;
+  celebrationSeenToday: boolean;
+  markCelebrationSeen: () => void;
   toggleDailyProgress: (key: keyof DailyProgress) => void;
   saveDailyReflection: (date: string, text: string) => void;
   setMode: (mode: UserMode) => void;
@@ -122,6 +126,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [progressHistory, setProgressHistory] = useState<ProgressHistory>({});
   const [dailyReflections, setDailyReflections] = useState<Record<string, string>>({});
+  const [celebrationDate, setCelebrationDate] = useState<string | null>(null);
 
   // ---- Remote sync helpers (no-ops unless signed in + configured) ----------
 
@@ -213,6 +218,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setDeletedIds(storedDeleted);
     setProgressHistory(storedHistory);
     setDailyReflections(storedReflections);
+    setCelebrationDate(readJSON<string | null>(CELEBRATION_KEY, null));
     writeJSON(PROFILE_KEY, reconciled);
     setReady(true);
   }, []);
@@ -401,6 +407,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [remoteUpsertReflection]
   );
 
+  // Local-only UI flag so the daily completion celebration shows once per day.
+  const markCelebrationSeen = useCallback(() => {
+    const today = todayKey();
+    setCelebrationDate(today);
+    writeJSON(CELEBRATION_KEY, today);
+  }, []);
+
   const persistJournal = useCallback((entries: JournalEntry[]) => {
     setJournalEntries(entries);
     writeJSON(JOURNAL_KEY, entries);
@@ -478,6 +491,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     () => Object.values(progressHistory).filter((p) => p.workout).length,
     [progressHistory]
   );
+  const allProgressComplete =
+    dailyProgress.scripture &&
+    dailyProgress.devotion &&
+    dailyProgress.prayer &&
+    dailyProgress.workout;
+  const celebrationSeenToday = celebrationDate === todayKey();
 
   const value: AppStateValue = {
     ready,
@@ -488,6 +507,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     dailyReflections,
     totalDevotionDays,
     totalWorkouts,
+    allProgressComplete,
+    celebrationSeenToday,
+    markCelebrationSeen,
     toggleDailyProgress,
     saveDailyReflection,
     setMode,

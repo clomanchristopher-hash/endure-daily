@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { SideNav } from "@/components/layout/SideNav";
 import { TopBar } from "@/components/layout/TopBar";
 import { SplashScreen } from "@/components/SplashScreen";
+import { CompletionCelebration } from "@/components/CompletionCelebration";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -53,6 +54,7 @@ export default function RootLayout({
               </div>
             </div>
             <BottomNav />
+            <CompletionCelebration />
           </AppStateProvider>
         </AuthProvider>
       </body>

@@ -1,15 +1,15 @@
 import { Devotion } from "@/types";
 
-// Scripture text uses the King James Version (public domain) so it can ship
-// freely with the app. Devotion commentary is original content.
+// Scripture text uses the Berean Standard Bible (BSB), which is freely
+// available for use, so it can ship with the app. Commentary is original.
 export const devotions: Devotion[] = [
   {
     id: "strength-in-weakness",
     title: "Strength Made Perfect",
     theme: "Strength",
-    scripture_reference: "2 Corinthians 12:9 (KJV)",
+    scripture_reference: "2 Corinthians 12:9",
     scripture_text:
-      "And he said unto me, My grace is sufficient for thee: for my strength is made perfect in weakness. Most gladly therefore will I rather glory in my infirmities, that the power of Christ may rest upon me.",
+      "But He said to me, “My grace is sufficient for you, for My power is perfected in weakness.” Therefore I will boast all the more gladly in my weaknesses, so that the power of Christ may rest on me.",
     devotion_text:
       "Every rep that shakes your arms and every mile that empties your lungs is teaching you the same lesson Paul learned on his knees: weakness isn't the end of the story, it's the doorway to God's power. You don't have to be strong enough on your own. You just have to show up, push, and let grace do what willpower can't. The world says hide your weakness. God says bring it to Him and watch what He builds from it.",
     prayer:
@@ -24,13 +24,13 @@ export const devotions: Devotion[] = [
   },
   {
     id: "run-with-endurance",
-    title: "Run With Patience",
+    title: "Run With Endurance",
     theme: "Endurance",
-    scripture_reference: "Hebrews 12:1 (KJV)",
+    scripture_reference: "Hebrews 12:1",
     scripture_text:
-      "Wherefore seeing we also are compassed about with so great a cloud of witnesses, let us lay aside every weight, and the sin which doth so easily beset us, and let us run with patience the race that is set before us.",
+      "Therefore, since we are surrounded by such a great cloud of witnesses, let us throw off every encumbrance and the sin that so easily entangles, and let us run with endurance the race set out for us.",
     devotion_text:
-      "Endurance isn't just a fitness goal, it's a spiritual command. The writer of Hebrews pictures your life as a race being watched by a great cloud of witnesses — people who finished their race in faith and are cheering you toward the finish line. But you can't run fast carrying extra weight. What's slowing you down isn't just body fat or bad habits. Sometimes it's bitterness, comparison, or fear. Strip it off. Run light. Run long. Run with patience, because this is a marathon of faith, not a sprint.",
+      "Endurance isn't just a fitness goal, it's a spiritual command. The writer of Hebrews pictures your life as a race being watched by a great cloud of witnesses — people who finished their race in faith and are cheering you toward the finish line. But you can't run fast carrying extra weight. What's slowing you down isn't just body fat or bad habits. Sometimes it's bitterness, comparison, or fear. Strip it off. Run light. Run long. Run with endurance, because this is a marathon of faith, not a sprint.",
     prayer:
       "Father, show me the weight I'm carrying that isn't mine to carry. Help me lay it down at the starting line so I can run the race You've marked out for me with patience and joy.",
     reflection_question:
@@ -45,9 +45,9 @@ export const devotions: Devotion[] = [
     id: "renewed-strength",
     title: "Wings Like Eagles",
     theme: "Renewal",
-    scripture_reference: "Isaiah 40:31 (KJV)",
+    scripture_reference: "Isaiah 40:31",
     scripture_text:
-      "But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.",
+      "But those who wait upon the LORD will renew their strength; they will mount up with wings like eagles; they will run and not grow weary; they will walk and not faint.",
     devotion_text:
       "There's a kind of tired that a nap can't fix — the tired of trying to do everything under your own strength. Isaiah offers a different path: waiting on the Lord. This isn't passive sitting around; it's active trust, the posture of a runner catching their breath before the next stride. When you wait on God, He doesn't just help you survive the day, He renews you for it. Whether you're mounting up, running, or simply walking through a hard season, His strength meets you exactly where you are.",
     prayer:
@@ -62,13 +62,13 @@ export const devotions: Devotion[] = [
   },
   {
     id: "discipline-of-a-soldier",
-    title: "Endure Hardness",
+    title: "Suffer Like a Good Soldier",
     theme: "Discipline",
-    scripture_reference: "2 Timothy 2:3-4 (KJV)",
+    scripture_reference: "2 Timothy 2:3-4",
     scripture_text:
-      "Thou therefore endure hardness, as a good soldier of Jesus Christ. No man that warreth entangleth himself with the affairs of this life; that he may please him who hath chosen him to be a soldier.",
+      "Join me in suffering, like a good soldier of Christ Jesus. A soldier refrains from entangling himself in civilian affairs, in order to please the one who enlisted him.",
     devotion_text:
-      "Nobody drifts into discipline. Soldiers train on purpose, on schedule, whether they feel like it or not — because the mission matters more than the mood. Paul calls every believer to that same soldier's mindset: endure hardness, stay focused, don't get entangled in things that pull you off mission. Discipline in your body and discipline in your walk with God are trained the same way — one obedient rep at a time, especially on the days you don't feel like it.",
+      "Nobody drifts into discipline. Soldiers train on purpose, on schedule, whether they feel like it or not — because the mission matters more than the mood. Paul calls every believer to that same soldier's mindset: endure hardship, stay focused, don't get entangled in things that pull you off mission. Discipline in your body and discipline in your walk with God are trained the same way — one obedient rep at a time, especially on the days you don't feel like it.",
     prayer:
       "Jesus, make me a good soldier. When my feelings say quit, let my obedience say go. Strip away the distractions that entangle me and keep my eyes on the mission You've called me to.",
     reflection_question:
@@ -83,9 +83,9 @@ export const devotions: Devotion[] = [
     id: "temple-of-the-holy-spirit",
     title: "Bought With a Price",
     theme: "Stewardship",
-    scripture_reference: "1 Corinthians 6:19-20 (KJV)",
+    scripture_reference: "1 Corinthians 6:19-20",
     scripture_text:
-      "What? know ye not that your body is the temple of the Holy Ghost which is in you, which ye have of God, and ye are not your own? For ye are bought with a price: therefore glorify God in your body, and in your spirit, which are God's.",
+      "Do you not know that your body is a temple of the Holy Spirit who is in you, whom you have received from God? You are not your own; you were bought at a price. Therefore glorify God with your body.",
     devotion_text:
       "Fitness culture often makes the body about vanity. Scripture makes it about stewardship. Your body isn't a billboard for your image — it's a temple where God's Spirit actually dwells. That changes the 'why' behind every workout. You're not training to be worshipped; you're training because you're a caretaker of something sacred. Eating well, moving your body, and resting aren't vain pursuits — they're acts of honoring the One who bought you.",
     prayer:
@@ -102,9 +102,9 @@ export const devotions: Devotion[] = [
     id: "be-strong-and-courageous",
     title: "Be Strong and of Good Courage",
     theme: "Courage",
-    scripture_reference: "Joshua 1:9 (KJV)",
+    scripture_reference: "Joshua 1:9",
     scripture_text:
-      "Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.",
+      "Have I not commanded you to be strong and courageous? Do not be afraid or discouraged, for the LORD your God is with you wherever you go.",
     devotion_text:
       "Joshua stood at the edge of a new season with giants ahead of him, and God's command wasn't 'wait until you feel ready.' It was 'be strong and courageous now, because I am already with you.' Courage isn't the absence of fear — it's moving forward with God despite it. Whatever giant you're facing today, whether it's a comeback after injury, a hard conversation, or just getting off the couch, you don't face it alone.",
     prayer:
@@ -119,11 +119,11 @@ export const devotions: Devotion[] = [
   },
   {
     id: "press-toward-the-goal",
-    title: "Press Toward the Mark",
+    title: "Press Toward the Goal",
     theme: "Purpose",
-    scripture_reference: "Philippians 3:13-14 (KJV)",
+    scripture_reference: "Philippians 3:13-14",
     scripture_text:
-      "Brethren, I count not myself to have apprehended: but this one thing I do, forgetting those things which are behind, and reaching forth unto those things which are before, I press toward the mark for the prize of the high calling of God in Christ Jesus.",
+      "Brothers, I do not consider myself yet to have taken hold of it. But one thing I do: Forgetting what is behind and reaching forward to what is ahead, I press on toward the goal to win the prize of God's heavenly calling in Christ Jesus.",
     devotion_text:
       "Paul wasn't undefeated. He had a past he wasn't proud of. But he refused to let yesterday's failures set today's pace. Instead of replaying old mistakes or old victories, he leaned forward — pressing toward what God had for him next. Your last workout, your last relapse, your last win — none of it gets the final word. Today is a new stretch of the race. Forget what's behind. Press forward.",
     prayer:
@@ -140,9 +140,9 @@ export const devotions: Devotion[] = [
     id: "rest-and-be-still",
     title: "Be Still",
     theme: "Rest",
-    scripture_reference: "Psalm 46:10 (KJV)",
+    scripture_reference: "Psalm 46:10",
     scripture_text:
-      "Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.",
+      "Be still and know that I am God; I will be exalted among the nations, I will be exalted over the earth.",
     devotion_text:
       "Rest days aren't days off from your faith — they're some of the most important training days you have. Muscles grow in recovery, not just in effort. In the same way, your soul grows in stillness, not just in striving. Psalm 46 was written in the middle of chaos, nations raging, mountains shaking — and God's answer was 'be still.' Recovery isn't laziness. It's trust that God is still God even when you stop moving.",
     prayer:
@@ -159,9 +159,9 @@ export const devotions: Devotion[] = [
     id: "all-things-through-christ",
     title: "I Can Do All Things",
     theme: "Perseverance",
-    scripture_reference: "Philippians 4:12-13 (KJV)",
+    scripture_reference: "Philippians 4:12-13",
     scripture_text:
-      "I know both how to be abased, and I know how to abound: every where and in all things I am instructed both to be full and to be hungry, both to abound and to suffer need. I can do all things through Christ which strengtheneth me.",
+      "I know how to live humbly, and I know how to abound. I am accustomed to any and every situation—to being filled and being hungry, to having plenty and having need. I can do all things through Christ who gives me strength.",
     devotion_text:
       "This verse gets quoted on gym walls, but its context is even better than the highlight. Paul wrote it from prison, having learned contentment in both plenty and need. 'I can do all things' isn't a promise of unlimited PRs — it's a promise of sufficient strength in every circumstance, good or hard. Whether today is a personal-best day or a barely-get-through-it day, Christ's strength meets you exactly where you are.",
     prayer:
@@ -178,8 +178,8 @@ export const devotions: Devotion[] = [
     id: "iron-sharpens-iron",
     title: "Iron Sharpens Iron",
     theme: "Community",
-    scripture_reference: "Proverbs 27:17 (KJV)",
-    scripture_text: "Iron sharpeneth iron; so a man sharpeneth the countenance of his friend.",
+    scripture_reference: "Proverbs 27:17",
+    scripture_text: "As iron sharpens iron, so one man sharpens another.",
     devotion_text:
       "No one gets strong alone — not physically, not spiritually. Iron doesn't sharpen itself; it needs friction from another blade. God designed community the same way: the right people push you, challenge you, and call out strength you didn't know you had. If you're trying to grow in isolation, you're missing half of God's design for growth. Find your training partners, your accountability, your church family — and let the friction make you sharper.",
     prayer:
@@ -194,11 +194,11 @@ export const devotions: Devotion[] = [
   },
   {
     id: "do-not-grow-weary",
-    title: "Let Us Not Be Weary",
+    title: "Let Us Not Grow Weary",
     theme: "Consistency",
-    scripture_reference: "Galatians 6:9 (KJV)",
+    scripture_reference: "Galatians 6:9",
     scripture_text:
-      "And let us not be weary in well doing: for in due season we shall reap, if we faint not.",
+      "Let us not grow weary in well-doing, for in due time we will reap a harvest if we do not give up.",
     devotion_text:
       "The results you're praying for and training for are almost never instant — they come 'in due season.' The danger isn't failing once; it's growing weary and quitting right before the harvest. Consistency is a spiritual discipline as much as a fitness one. God isn't asking for perfection today. He's asking you not to faint — to keep showing up, keep obeying, keep training, trusting the season of reaping is still coming.",
     prayer:
@@ -215,9 +215,9 @@ export const devotions: Devotion[] = [
     id: "fight-the-good-fight",
     title: "Fought the Good Fight",
     theme: "Victory",
-    scripture_reference: "2 Timothy 4:7-8 (KJV)",
+    scripture_reference: "2 Timothy 4:7-8",
     scripture_text:
-      "I have fought a good fight, I have finished my course, I have kept the faith: Henceforth there is laid up for me a crown of righteousness, which the Lord, the righteous judge, will give.",
+      "I have fought the good fight, I have finished the race, I have kept the faith. From now on there is reserved for me the crown of righteousness, which the Lord, the righteous Judge, will award to me on that day—and not only to me, but to all who have longed for His appearing.",
     devotion_text:
       "Paul wrote this near the end of his life, looking back on a course that was full of hardship, beatings, shipwrecks, and rejection — yet he called it 'a good fight.' Victory in God's eyes isn't measured only by trophies or PRs; it's measured by faithfulness to the finish. Whatever fight you're in today, whether physical, mental, or spiritual, God isn't just watching for wins. He's watching for faithfulness. Fight well. Finish well. Keep the faith.",
     prayer:
