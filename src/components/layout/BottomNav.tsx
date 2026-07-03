@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, RotateCcw, X } from "lucide-react";
 import { primaryNavItems, secondaryNavItems } from "./nav-items";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { useAppState } from "@/context/AppStateContext";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { resetOnboarding } = useAppState();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreActive = secondaryNavItems.some((item) => item.href === pathname);
 
@@ -57,7 +59,17 @@ export function BottomNav() {
               })}
             </div>
 
-            <FeedbackButton className="mt-4 border-t border-border-subtle pt-4" />
+            <button
+              onClick={() => {
+                resetOnboarding();
+                setMoreOpen(false);
+              }}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+            >
+              <RotateCcw size={15} /> Reset Onboarding
+            </button>
+
+            <FeedbackButton className="mt-3 border-t border-border-subtle pt-4" />
           </div>
         </div>
       )}

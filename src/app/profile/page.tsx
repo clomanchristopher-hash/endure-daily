@@ -10,19 +10,27 @@ import {
   Flame,
   Heart,
   NotebookPen,
+  RotateCcw,
   Trophy,
   Users,
   CreditCard,
 } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { PremiumLockCard } from "@/components/ui/PremiumLockCard";
 import { AccountSection } from "@/components/auth/AccountSection";
 
 export default function ProfilePage() {
-  const { profile, journalEntries, updateDisplayName, totalDevotionDays, totalWorkouts } =
-    useAppState();
+  const {
+    profile,
+    journalEntries,
+    updateDisplayName,
+    totalDevotionDays,
+    totalWorkouts,
+    resetOnboarding,
+  } = useAppState();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
@@ -48,6 +56,10 @@ export default function ProfilePage() {
 
       {/* Account: sign in / out and email (syncs when Supabase is connected) */}
       <AccountSection />
+
+      <Button variant="outline" className="mt-4 w-full" onClick={resetOnboarding}>
+        <RotateCcw size={15} /> Reset Onboarding
+      </Button>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card className="flex flex-col items-center justify-center gap-1 py-5 text-center">

@@ -12,10 +12,12 @@ import {
   DailyProgress,
   Devotion,
   JournalEntry,
+  OnboardingData,
   UserMode,
   UserProfile,
 } from "@/types";
 import { devotions as seedDevotions } from "@/lib/data/devotions";
+import { ACTIVITY_STORAGE_KEY } from "@/lib/data/activities";
 import { readJSON, todayKey, writeJSON, yesterdayKey } from "@/lib/storage";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -27,6 +29,7 @@ const DEVOTION_DELETED_KEY = "devotion-deleted-ids";
 const DAILY_PROGRESS_HISTORY_KEY = "daily-progress-history";
 const DAILY_REFLECTIONS_KEY = "daily-reflections";
 const CELEBRATION_KEY = "celebration-shown-date";
+const ONBOARDING_KEY = "onboarding";
 
 const defaultProfile: UserProfile = {
   display_name: "Friend",
@@ -44,6 +47,14 @@ const defaultProgress: DailyProgress = {
   devotion: false,
   prayer: false,
   workout: false,
+};
+
+const defaultOnboarding: OnboardingData = {
+  completed: false,
+  focuses: [],
+  rhythm: null,
+  custom_time: null,
+  preferred_activity: null,
 };
 
 // Checklist history keyed by day (yyyy-mm-dd). Today derives from it, and it
@@ -86,6 +97,16 @@ interface AppStateValue {
   allProgressComplete: boolean;
   celebrationSeenToday: boolean;
   markCelebrationSeen: () => void;
+  onboarding: OnboardingData;
+  completeOnboarding: (payload: {
+    name: string;
+    mode: UserMode;
+    activity: string;
+    focuses: string[];
+    rhythm: OnboardingData["rhythm"];
+    customTime: string | null;
+  }) => void;
+  resetOnboarding: () => void;
   toggleDailyProgress: (key: keyof DailyProgress) => void;
   saveDailyReflection: (date: string, text: string) => void;
   setMode: (mode: UserMode) => void;
@@ -127,6 +148,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [progressHistory, setProgressHistory] = useState<ProgressHistory>({});
   const [dailyReflections, setDailyReflections] = useState<Record<string, string>>({});
   const [celebrationDate, setCelebrationDate] = useState<string | null>(null);
+  const [onboarding, setOnboarding] = useState<OnboardingData>(defaultOnboarding);
 
   // ---- Remote sync helpers (no-ops unless signed in + configured) ----------
 
@@ -219,6 +241,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setProgressHistory(storedHistory);
     setDailyReflections(storedReflections);
     setCelebrationDate(readJSON<string | null>(CELEBRATION_KEY, null));
+    setOnboarding(readJSON<OnboardingData>(ONBOARDING_KEY, defaultOnboarding));
     writeJSON(PROFILE_KEY, reconciled);
     setReady(true);
   }, []);
@@ -414,6 +437,36 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     writeJSON(CELEBRATION_KEY, today);
   }, []);
 
+  const completeOnboarding = useCallback<AppStateValue["completeOnboarding"]>(
+    (payload) => {
+      // Name + movement lane live on the profile; write both in one update.
+      setProfile((prev) => {
+        const next = { ...prev, display_name: payload.name, mode: payload.mode };
+        writeJSON(PROFILE_KEY, next);
+        remoteUpsertProfile(next);
+        return next;
+      });
+      // Preferred activity feeds Today's Assignment on the Move tab.
+      writeJSON(ACTIVITY_STORAGE_KEY, payload.activity);
+
+      const data: OnboardingData = {
+        completed: true,
+        focuses: payload.focuses,
+        rhythm: payload.rhythm,
+        custom_time: payload.customTime,
+        preferred_activity: payload.activity,
+      };
+      setOnboarding(data);
+      writeJSON(ONBOARDING_KEY, data);
+    },
+    [remoteUpsertProfile]
+  );
+
+  const resetOnboarding = useCallback(() => {
+    setOnboarding(defaultOnboarding);
+    writeJSON(ONBOARDING_KEY, defaultOnboarding);
+  }, []);
+
   const persistJournal = useCallback((entries: JournalEntry[]) => {
     setJournalEntries(entries);
     writeJSON(JOURNAL_KEY, entries);
@@ -510,6 +563,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     allProgressComplete,
     celebrationSeenToday,
     markCelebrationSeen,
+    onboarding,
+    completeOnboarding,
+    resetOnboarding,
     toggleDailyProgress,
     saveDailyReflection,
     setMode,

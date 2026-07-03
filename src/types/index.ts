@@ -54,6 +54,18 @@ export const DAILY_PROGRESS_ITEMS: { key: keyof DailyProgress; label: string }[]
   { key: "workout", label: "Workout Complete" },
 ];
 
+export type DailyRhythm = "morning" | "afternoon" | "evening" | "custom";
+
+// First-run personalization. Name + mode live on the profile; this stores the
+// extra answers and the completed flag that gates the onboarding flow.
+export interface OnboardingData {
+  completed: boolean;
+  focuses: string[];
+  rhythm: DailyRhythm | null;
+  custom_time: string | null; // "HH:MM" when rhythm === "custom"
+  preferred_activity: string | null; // walk | run | gym | recovery
+}
+
 export interface UserProfile {
   display_name: string;
   mode: UserMode;

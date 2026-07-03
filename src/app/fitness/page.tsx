@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Pause, Play, Sparkles, Square } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { readJSON, todayKey, writeJSON } from "@/lib/storage";
-import { Activity, activities, activityOrder, defaultActivityId } from "@/lib/data/activities";
+import {
+  Activity,
+  ACTIVITY_STORAGE_KEY,
+  activities,
+  activityOrder,
+  defaultActivityId,
+} from "@/lib/data/activities";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 
-const ACTIVITY_KEY = "assignment-activity";
+const ACTIVITY_KEY = ACTIVITY_STORAGE_KEY;
 const COMPLETE_KEY = "assignment-complete-date";
 
 function formatTime(total: number): string {

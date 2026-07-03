@@ -1,5 +1,9 @@
 import { UserMode } from "@/types";
 
+// localStorage key for the user's chosen Move activity. Shared so onboarding
+// can pre-set it and the Move page reads the same value.
+export const ACTIVITY_STORAGE_KEY = "assignment-activity";
+
 export type ActivityKind = "countdown" | "countup";
 
 export interface Activity {
