@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Dumbbell, Footprints, Sparkles } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { readJSON, todayKey, writeJSON } from "@/lib/storage";
@@ -12,52 +12,176 @@ import {
   defaultActivityId,
 } from "@/lib/data/activities";
 import { getJourneyById } from "@/lib/data/journeys";
-import { MovementJourney, JourneyProgress } from "@/types";
+import { MovementJourney, JourneyProgress, UserMode } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { ModeToggle } from "@/components/ui/ModeToggle";
 import { AssignmentTimer } from "@/components/move/AssignmentTimer";
 import { WorkoutDetails } from "@/components/journeys/WorkoutDetails";
+import { MovementJourneys } from "@/components/journeys/MovementJourneys";
 
 const ACTIVITY_KEY = ACTIVITY_STORAGE_KEY;
 const COMPLETE_KEY = "assignment-complete-date";
 
-export default function MovePage() {
-  const { profile, journeyProgress, completeJourneyDay } = useAppState();
-  const [showQuickActivity, setShowQuickActivity] = useState(false);
+type Tab = "foundation" | "challenge" | "journeys";
+const TABS: Tab[] = ["foundation", "challenge", "journeys"];
 
-  const journey = journeyProgress.plan_id
-    ? getJourneyById(journeyProgress.plan_id)
-    : undefined;
+export default function MovePage() {
+  return (
+    <Suspense fallback={null}>
+      <MoveContent />
+    </Suspense>
+  );
+}
+
+function MoveContent() {
+  const searchParams = useSearchParams();
+  const { ready, profile, setMode, journeyProgress, completeJourneyDay } = useAppState();
+
+  const journey = journeyProgress.plan_id ? getJourneyById(journeyProgress.plan_id) : undefined;
   // Only free previews carry a startable schedule.
-  const journeyActive = Boolean(journey && journey.days.length > 0);
+  const activeJourney = journey && journey.days.length > 0 ? journey : undefined;
+
+  const [tab, setTab] = useState<Tab>("foundation");
+  const [journeyView, setJourneyView] = useState<"overview" | "assignment">("overview");
+  const [initialized, setInitialized] = useState(false);
+
+  // Choose the initial tab once state has loaded: honor ?tab / ?assignment,
+  // otherwise open the active journey's assignment, otherwise the mode lane.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!ready || initialized) return;
+    const tabParam = searchParams.get("tab");
+    const assignmentParam = searchParams.get("assignment");
+    if (tabParam === "journeys") {
+      setTab("journeys");
+      if (assignmentParam && activeJourney) setJourneyView("assignment");
+    } else if (activeJourney) {
+      setTab("journeys");
+      setJourneyView("assignment");
+    } else {
+      setTab(profile.mode === "athlete" ? "challenge" : "foundation");
+    }
+    setInitialized(true);
+  }, [ready, initialized, searchParams, activeJourney, profile.mode]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  function selectTab(next: Tab) {
+    setTab(next);
+    // Foundation / Challenge double as the movement-lane (mode) selector.
+    if (next === "foundation") setMode("leisure");
+    else if (next === "challenge") setMode("athlete");
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-serif text-2xl font-bold text-foreground">Move</h1>
-          <p className="mt-1 text-sm text-muted">One assignment. Move with purpose.</p>
-        </div>
-        <ModeToggle />
+      <div>
+        <h1 className="font-serif text-2xl font-bold text-foreground">Move</h1>
+        <p className="mt-1 text-sm text-muted">One assignment. Move with purpose.</p>
       </div>
 
-      {journeyActive && journey && !showQuickActivity ? (
-        <JourneyAssignment
-          journey={journey}
-          progress={journeyProgress}
-          onComplete={completeJourneyDay}
-          onQuickActivity={() => setShowQuickActivity(true)}
-        />
-      ) : (
-        <ActivityAssignment
-          profileMode={profile.mode}
-          showBackToJourney={journeyActive}
-          onBackToJourney={() => setShowQuickActivity(false)}
+      {/* Foundation | Challenge | Journeys */}
+      <div className="mt-4 flex w-full rounded-full border border-border-subtle bg-surface-raised p-1 text-sm font-semibold">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => selectTab(t)}
+            aria-pressed={tab === t}
+            className={`flex-1 rounded-full px-2 py-1.5 capitalize transition-colors ${
+              tab === t ? "bg-gold text-[#0d1510]" : "text-muted"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {tab === "foundation" && <ActivityAssignment key="foundation" lane="leisure" />}
+      {tab === "challenge" && <ActivityAssignment key="challenge" lane="athlete" />}
+      {tab === "journeys" &&
+        (activeJourney && journeyView === "assignment" ? (
+          <JourneyAssignment
+            journey={activeJourney}
+            progress={journeyProgress}
+            onComplete={completeJourneyDay}
+            onBack={() => setJourneyView("overview")}
+          />
+        ) : (
+          <JourneysOverview
+            activeJourney={activeJourney}
+            progress={journeyProgress}
+            onViewAssignment={() => setJourneyView("assignment")}
+          />
+        ))}
+    </div>
+  );
+}
+
+// ---- Journeys overview: active card + full list ---------------------------
+
+function JourneysOverview({
+  activeJourney,
+  progress,
+  onViewAssignment,
+}: {
+  activeJourney: MovementJourney | undefined;
+  progress: JourneyProgress;
+  onViewAssignment: () => void;
+}) {
+  const { leaveJourney } = useAppState();
+
+  return (
+    <div className="mt-5">
+      {activeJourney && (
+        <ActiveJourneyCard
+          journey={activeJourney}
+          progress={progress}
+          onView={onViewAssignment}
+          onLeave={leaveJourney}
         />
       )}
+      <div className={activeJourney ? "mt-7" : ""}>
+        <MovementJourneys activeId={progress.plan_id} />
+      </div>
     </div>
+  );
+}
+
+function ActiveJourneyCard({
+  journey,
+  progress,
+  onView,
+  onLeave,
+}: {
+  journey: MovementJourney;
+  progress: JourneyProgress;
+  onView: () => void;
+  onLeave: () => void;
+}) {
+  const CategoryIcon = journey.category === "running" ? Footprints : Dumbbell;
+  const finished = progress.current_week > journey.duration_weeks;
+
+  return (
+    <Card className="border-gold/30 bg-gold/5">
+      <div className="flex items-center justify-between">
+        <Badge tone="gold">Active Journey</Badge>
+        <button onClick={onLeave} className="text-xs text-muted hover:text-foreground">
+          Leave
+        </button>
+      </div>
+      <h3 className="mt-2 flex items-center gap-1.5 font-serif text-lg font-semibold text-foreground">
+        <CategoryIcon size={16} className="text-gold-soft" /> {journey.title}
+      </h3>
+      <p className="mt-0.5 text-sm text-muted">
+        Week {progress.current_week} · Day {progress.current_day}
+      </p>
+      <p className="mt-1 text-xs text-muted">
+        {finished ? "Journey complete" : "Continue Today's Assignment"}
+      </p>
+      <Button className="mt-3 w-full" onClick={onView}>
+        View Today&apos;s Assignment
+      </Button>
+    </Card>
   );
 }
 
@@ -67,12 +191,12 @@ function JourneyAssignment({
   journey,
   progress,
   onComplete,
-  onQuickActivity,
+  onBack,
 }: {
   journey: MovementJourney;
   progress: JourneyProgress;
   onComplete: () => void;
-  onQuickActivity: () => void;
+  onBack: () => void;
 }) {
   const { leaveJourney } = useAppState();
   const finished = progress.current_week > journey.duration_weeks;
@@ -80,40 +204,37 @@ function JourneyAssignment({
   const day = journey.days[progress.current_day - 1];
   const CategoryIcon = journey.category === "running" ? Footprints : Dumbbell;
 
-  const manageLinks = (
-    <div className="mt-4 flex flex-col items-center gap-1 text-xs text-muted">
-      <button onClick={onQuickActivity} className="font-semibold text-gold-soft hover:text-gold">
-        Prefer a quick activity today?
-      </button>
-      <button onClick={leaveJourney} className="hover:text-foreground">
-        Leave this Journey
-      </button>
-    </div>
+  const backLink = (
+    <button
+      onClick={onBack}
+      className="mt-4 flex items-center gap-1 text-sm font-semibold text-gold-soft hover:text-gold"
+    >
+      <ArrowLeft size={15} /> Back to Journeys
+    </button>
   );
 
   if (finished) {
     return (
-      <Card className="mt-5 border-evergreen/30 bg-evergreen/5 text-center">
-        <CheckCircle2 size={28} className="mx-auto text-evergreen" />
-        <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">Journey Complete</h2>
-        <p className="mt-1 text-muted">
-          You finished {journey.title}. Well done staying faithful to the work.
-        </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <Link href="/plans" className="flex-1">
-            <Button className="w-full">Explore More Journeys</Button>
-          </Link>
-          <Button variant="outline" className="flex-1" onClick={leaveJourney}>
+      <>
+        {backLink}
+        <Card className="mt-5 border-evergreen/30 bg-evergreen/5 text-center">
+          <CheckCircle2 size={28} className="mx-auto text-evergreen" />
+          <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">Journey Complete</h2>
+          <p className="mt-1 text-muted">
+            You finished {journey.title}. Well done staying faithful to the work.
+          </p>
+          <Button variant="outline" className="mt-4 w-full" onClick={leaveJourney}>
             Leave Plan
           </Button>
-        </div>
-      </Card>
+        </Card>
+      </>
     );
   }
 
   if (doneToday) {
     return (
       <>
+        {backLink}
         <Card className="mt-5 border-evergreen/30 bg-evergreen/5">
           <Badge tone="evergreen">
             <CheckCircle2 size={12} /> Today&apos;s Assignment Complete
@@ -129,13 +250,13 @@ function JourneyAssignment({
             <p className="mt-1 font-serif text-lg font-semibold text-foreground">{day.title}</p>
           </div>
         </Card>
-        {manageLinks}
       </>
     );
   }
 
   return (
     <>
+      {backLink}
       <Card className="mt-5 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <Badge tone="gold">
@@ -179,40 +300,34 @@ function JourneyAssignment({
           />
         )}
       </Card>
-
-      {manageLinks}
     </>
   );
 }
 
-// ---- Regular activity assignment (walk / run / gym / recovery) ------------
+// ---- Foundation / Challenge daily activity assignment ---------------------
 
-function ActivityAssignment({
-  profileMode,
-  showBackToJourney,
-  onBackToJourney,
-}: {
-  profileMode: "leisure" | "athlete";
-  showBackToJourney: boolean;
-  onBackToJourney: () => void;
-}) {
+function ActivityAssignment({ lane }: { lane: UserMode }) {
   const { dailyProgress, toggleDailyProgress } = useAppState();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
 
+  // Foundation and Challenge each remember their own activity, so switching
+  // lanes shows the right default (walk vs run) instead of one shared choice.
+  const laneKey = `${ACTIVITY_KEY}-${lane}`;
+
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    const savedId = readJSON<string | null>(ACTIVITY_KEY, null);
-    if (savedId && activities[savedId]) setSelectedId(savedId);
+    const savedId = readJSON<string | null>(laneKey, null);
+    setSelectedId(savedId && activities[savedId] ? savedId : null);
     setCompleted(readJSON<string | null>(COMPLETE_KEY, null) === todayKey());
-  }, []);
+  }, [laneKey]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const activity = activities[selectedId ?? defaultActivityId(profileMode)];
+  const activity = activities[selectedId ?? defaultActivityId(lane)];
 
   function selectActivity(id: string) {
     setSelectedId(id);
-    writeJSON(ACTIVITY_KEY, id);
+    writeJSON(laneKey, id);
   }
 
   function handleFinish() {
@@ -223,15 +338,6 @@ function ActivityAssignment({
 
   return (
     <>
-      {showBackToJourney && (
-        <button
-          onClick={onBackToJourney}
-          className="mt-4 flex items-center gap-1 text-sm font-semibold text-gold-soft hover:text-gold"
-        >
-          <ArrowLeft size={15} /> Back to your Journey
-        </button>
-      )}
-
       <Card className="mt-5 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <Badge tone="gold">

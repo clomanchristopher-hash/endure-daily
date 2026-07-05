@@ -52,7 +52,8 @@ export function JourneyDetail({ id }: { id: string }) {
       if (!ok) return;
     }
     startJourney(journey!.id);
-    router.push("/fitness");
+    // Land on the Move tab's Journeys view showing today's assignment.
+    router.push("/fitness?tab=journeys&assignment=1");
   }
 
   return (
@@ -100,7 +101,7 @@ export function JourneyDetail({ id }: { id: string }) {
           <div className="mt-5 flex gap-3">
             {isActive ? (
               <>
-                <Link href="/fitness" className="flex-1">
+                <Link href="/fitness?tab=journeys&assignment=1" className="flex-1">
                   <Button className="w-full">
                     <Check size={16} /> Go to Today&apos;s Assignment
                   </Button>
