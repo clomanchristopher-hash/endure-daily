@@ -1,59 +1,35 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Pause, Play, Sparkles, Square } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Dumbbell, Sparkles } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { readJSON, todayKey, writeJSON } from "@/lib/storage";
 import {
-  Activity,
   ACTIVITY_STORAGE_KEY,
   activities,
   activityOrder,
   defaultActivityId,
 } from "@/lib/data/activities";
+import { getStrengthPlanById } from "@/lib/data/strength";
+import { StrengthPlan, StrengthProgress } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ModeToggle } from "@/components/ui/ModeToggle";
+import { AssignmentTimer } from "@/components/move/AssignmentTimer";
 
 const ACTIVITY_KEY = ACTIVITY_STORAGE_KEY;
 const COMPLETE_KEY = "assignment-complete-date";
 
-function formatTime(total: number): string {
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
+export default function MovePage() {
+  const { profile, strengthProgress, completeStrengthWorkout } = useAppState();
+  const [showQuickActivity, setShowQuickActivity] = useState(false);
 
-export default function FitnessPage() {
-  const { profile, dailyProgress, toggleDailyProgress } = useAppState();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [completed, setCompleted] = useState(false);
-
-  // localStorage is client-only, so load any explicit choice + completion here.
-  // We only store an id when the user actively picks one; otherwise selectedId
-  // stays null and the assignment follows their mode (leisure -> walk, etc.).
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    const savedId = readJSON<string | null>(ACTIVITY_KEY, null);
-    if (savedId && activities[savedId]) setSelectedId(savedId);
-    setCompleted(readJSON<string | null>(COMPLETE_KEY, null) === todayKey());
-  }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  const activity = activities[selectedId ?? defaultActivityId(profile.mode)];
-
-  function selectActivity(id: string) {
-    setSelectedId(id);
-    writeJSON(ACTIVITY_KEY, id);
-  }
-
-  function handleFinish() {
-    writeJSON(COMPLETE_KEY, todayKey());
-    setCompleted(true);
-    // Connect to Today's Progress — mark the Workout item done if it isn't.
-    if (!dailyProgress.workout) toggleDailyProgress("workout");
-  }
+  const strengthPlan = strengthProgress.plan_id
+    ? getStrengthPlanById(strengthProgress.plan_id)
+    : undefined;
+  const strengthActive = Boolean(strengthPlan);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
@@ -65,7 +41,193 @@ export default function FitnessPage() {
         <ModeToggle />
       </div>
 
-      {/* Today's Assignment — the single featured card */}
+      {strengthActive && strengthPlan && !showQuickActivity ? (
+        <StrengthAssignment
+          onQuickActivity={() => setShowQuickActivity(true)}
+          plan={strengthPlan}
+          progress={strengthProgress}
+          onComplete={completeStrengthWorkout}
+        />
+      ) : (
+        <ActivityAssignment
+          profileMode={profile.mode}
+          showBackToStrength={strengthActive}
+          onBackToStrength={() => setShowQuickActivity(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---- Strength Journey assignment ------------------------------------------
+
+function StrengthAssignment({
+  plan,
+  progress,
+  onComplete,
+  onQuickActivity,
+}: {
+  plan: StrengthPlan;
+  progress: StrengthProgress;
+  onComplete: () => void;
+  onQuickActivity: () => void;
+}) {
+  const { leaveStrengthPlan } = useAppState();
+  const finished = progress.current_week > plan.duration_weeks;
+  const doneToday = progress.last_completed_date === todayKey();
+  const workout = plan.workouts[progress.current_day - 1];
+
+  const manageLinks = (
+    <div className="mt-4 flex flex-col items-center gap-1 text-xs text-muted">
+      <button onClick={onQuickActivity} className="font-semibold text-gold-soft hover:text-gold">
+        Prefer a quick activity today?
+      </button>
+      <button onClick={leaveStrengthPlan} className="hover:text-foreground">
+        Leave Strength Journey
+      </button>
+    </div>
+  );
+
+  if (finished) {
+    return (
+      <Card className="mt-5 border-evergreen/30 bg-evergreen/5 text-center">
+        <CheckCircle2 size={28} className="mx-auto text-evergreen" />
+        <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">Journey Complete</h2>
+        <p className="mt-1 text-muted">
+          You finished {plan.title}. Well done staying faithful to the work.
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <Link href="/plans" className="flex-1">
+            <Button className="w-full">Start a New Journey</Button>
+          </Link>
+          <Button variant="outline" className="flex-1" onClick={leaveStrengthPlan}>
+            Leave Plan
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Completed today — show rest state and a preview of what's next (not the
+  // full next workout, so it doesn't read as already done).
+  if (doneToday) {
+    return (
+      <>
+        <Card className="mt-5 border-evergreen/30 bg-evergreen/5">
+          <Badge tone="evergreen">
+            <CheckCircle2 size={12} /> Today&apos;s Workout Complete
+          </Badge>
+          <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">Well done.</h2>
+          <p className="mt-1 text-muted">
+            You showed up and put in the work. Rest, recover, and come back tomorrow.
+          </p>
+          <div className="mt-4 rounded-xl border border-border-subtle bg-surface-raised p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+              Next up · Week {progress.current_week} · Day {progress.current_day}
+            </p>
+            <p className="mt-1 font-serif text-lg font-semibold text-foreground">{workout.title}</p>
+          </div>
+        </Card>
+        {manageLinks}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Card className="mt-5 border-gold/30 bg-gold/5">
+        <div className="flex items-center justify-between">
+          <Badge tone="gold">
+            <Dumbbell size={12} /> {plan.title}
+          </Badge>
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+            Week {progress.current_week} · Day {progress.current_day}
+          </span>
+        </div>
+
+        <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">{workout.title}</h2>
+        <p className="mt-1 text-muted">{workout.purpose}</p>
+
+        <div className="mt-4 rounded-xl border border-border-subtle bg-surface-raised p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">Workout</p>
+          <ul className="mt-2 flex flex-col gap-2">
+            {workout.exercises.map((ex) => (
+              <li key={ex.name} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="font-medium text-foreground">{ex.name}</span>
+                <span className="shrink-0 text-muted">{ex.scheme}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-3 flex items-start gap-2 rounded-lg bg-gold/10 p-3 text-sm text-foreground">
+          <Sparkles size={15} className="mt-0.5 shrink-0 text-gold-soft" />
+          <span>
+            <span className="font-semibold text-gold-soft">Faith Focus: </span>
+            {workout.faith_focus}
+          </span>
+        </div>
+
+        <AssignmentTimer
+          key={`${progress.current_week}-${progress.current_day}`}
+          kind="countup"
+          durationSec={null}
+          onFinish={onComplete}
+        />
+      </Card>
+
+      {manageLinks}
+    </>
+  );
+}
+
+// ---- Regular activity assignment (walk / run / gym / recovery) ------------
+
+function ActivityAssignment({
+  profileMode,
+  showBackToStrength,
+  onBackToStrength,
+}: {
+  profileMode: "leisure" | "athlete";
+  showBackToStrength: boolean;
+  onBackToStrength: () => void;
+}) {
+  const { dailyProgress, toggleDailyProgress } = useAppState();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [completed, setCompleted] = useState(false);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const savedId = readJSON<string | null>(ACTIVITY_KEY, null);
+    if (savedId && activities[savedId]) setSelectedId(savedId);
+    setCompleted(readJSON<string | null>(COMPLETE_KEY, null) === todayKey());
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const activity = activities[selectedId ?? defaultActivityId(profileMode)];
+
+  function selectActivity(id: string) {
+    setSelectedId(id);
+    writeJSON(ACTIVITY_KEY, id);
+  }
+
+  function handleFinish() {
+    writeJSON(COMPLETE_KEY, todayKey());
+    setCompleted(true);
+    if (!dailyProgress.workout) toggleDailyProgress("workout");
+  }
+
+  return (
+    <>
+      {showBackToStrength && (
+        <button
+          onClick={onBackToStrength}
+          className="mt-4 flex items-center gap-1 text-sm font-semibold text-gold-soft hover:text-gold"
+        >
+          <ArrowLeft size={15} /> Back to your Strength Journey
+        </button>
+      )}
+
       <Card className="mt-5 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <Badge tone="gold">
@@ -86,10 +248,14 @@ export default function FitnessPage() {
           </div>
         )}
 
-        <AssignmentTimer key={activity.id} activity={activity} onFinish={handleFinish} />
+        <AssignmentTimer
+          key={activity.id}
+          kind={activity.kind}
+          durationSec={activity.durationSec}
+          onFinish={handleFinish}
+        />
       </Card>
 
-      {/* More Activities — compact chips, not dominating the screen */}
       <h3 className="mt-8 text-xs font-semibold uppercase tracking-wider text-muted">
         More Activities
       </h3>
@@ -115,84 +281,6 @@ export default function FitnessPage() {
       </div>
 
       <p className="mt-3 text-center text-xs text-muted">One faithful step counts.</p>
-    </div>
-  );
-}
-
-function AssignmentTimer({
-  activity,
-  onFinish,
-}: {
-  activity: Activity;
-  onFinish: () => void;
-}) {
-  const isCountdown = activity.kind === "countdown";
-  const initial = isCountdown ? activity.durationSec ?? 0 : 0;
-  const [status, setStatus] = useState<"idle" | "running" | "paused">("idle");
-  const [seconds, setSeconds] = useState(initial);
-
-  // Tick once per second while running. The interval lives with the effect so
-  // it's always cleaned up on pause, unmount, or activity switch.
-  useEffect(() => {
-    if (status !== "running") return;
-    const id = window.setInterval(() => {
-      setSeconds((prev) => (isCountdown ? Math.max(prev - 1, 0) : prev + 1));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [status, isCountdown]);
-
-  // A countdown that hits zero stops ticking; Finish stays available.
-  useEffect(() => {
-    if (isCountdown && status === "running" && seconds === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setStatus("paused");
-    }
-  }, [seconds, status, isCountdown]);
-
-  function finish() {
-    setStatus("idle");
-    setSeconds(initial);
-    onFinish();
-  }
-
-  return (
-    <div className="mt-5">
-      <div className="flex flex-col items-center justify-center rounded-xl border border-border-subtle bg-surface-raised py-6">
-        <span className="font-serif text-5xl font-bold tabular-nums text-foreground">
-          {formatTime(seconds)}
-        </span>
-        <span className="mt-1 text-xs uppercase tracking-wider text-muted">
-          {isCountdown ? "Time remaining" : "Time elapsed"}
-        </span>
-      </div>
-
-      <div className="mt-3 flex gap-2">
-        {status === "idle" && (
-          <Button className="flex-1" onClick={() => setStatus("running")}>
-            <Play size={16} /> Start Timer
-          </Button>
-        )}
-        {status === "running" && (
-          <>
-            <Button variant="secondary" className="flex-1" onClick={() => setStatus("paused")}>
-              <Pause size={16} /> Pause
-            </Button>
-            <Button className="flex-1" onClick={finish}>
-              <Square size={15} /> Finish
-            </Button>
-          </>
-        )}
-        {status === "paused" && (
-          <>
-            <Button className="flex-1" onClick={() => setStatus("running")}>
-              <Play size={16} /> Resume
-            </Button>
-            <Button variant="secondary" className="flex-1" onClick={finish}>
-              <Square size={15} /> Finish
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+    </>
   );
 }

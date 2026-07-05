@@ -39,6 +39,45 @@ export interface JournalEntry {
   created_at: string; // ISO timestamp
 }
 
+// ---- Strength Journeys -----------------------------------------------------
+
+export interface StrengthExercise {
+  name: string;
+  scheme: string; // e.g. "3 sets of 8–10"
+}
+
+export interface StrengthWorkout {
+  day: number; // 1-based day within the week
+  title: string; // e.g. "Upper Body Foundation"
+  purpose: string;
+  exercises: StrengthExercise[];
+  faith_focus: string;
+}
+
+export type StrengthLane = "foundation" | "challenge";
+
+export interface StrengthPlan {
+  id: string;
+  title: string;
+  description: string;
+  lane: StrengthLane;
+  days_per_week: number;
+  duration_weeks: number;
+  // The one-week template; repeated each week for the plan's duration.
+  workouts: StrengthWorkout[];
+}
+
+// Local progress for an active Strength Journey (Part 6). The week/day pointer
+// advances as the user completes each workout.
+export interface StrengthProgress {
+  plan_id: string | null;
+  start_date: string | null; // yyyy-mm-dd
+  current_week: number; // 1-based
+  current_day: number; // 1-based day within the week
+  completed_workouts: string[]; // keys like "w1d1"
+  last_completed_date: string | null; // yyyy-mm-dd of the most recent completion
+}
+
 // Self-reported daily checklist on the Home screen. Resets each new day.
 export interface DailyProgress {
   scripture: boolean;

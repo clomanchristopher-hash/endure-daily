@@ -13,11 +13,13 @@ import {
   Devotion,
   JournalEntry,
   OnboardingData,
+  StrengthProgress,
   UserMode,
   UserProfile,
 } from "@/types";
 import { devotions as seedDevotions } from "@/lib/data/devotions";
 import { ACTIVITY_STORAGE_KEY } from "@/lib/data/activities";
+import { getStrengthPlanById } from "@/lib/data/strength";
 import { readJSON, todayKey, writeJSON, yesterdayKey } from "@/lib/storage";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -30,6 +32,7 @@ const DAILY_PROGRESS_HISTORY_KEY = "daily-progress-history";
 const DAILY_REFLECTIONS_KEY = "daily-reflections";
 const CELEBRATION_KEY = "celebration-shown-date";
 const ONBOARDING_KEY = "onboarding";
+const STRENGTH_PROGRESS_KEY = "strength-progress";
 
 const defaultProfile: UserProfile = {
   display_name: "Friend",
@@ -55,6 +58,15 @@ const defaultOnboarding: OnboardingData = {
   rhythm: null,
   custom_time: null,
   preferred_activity: null,
+};
+
+const defaultStrengthProgress: StrengthProgress = {
+  plan_id: null,
+  start_date: null,
+  current_week: 1,
+  current_day: 1,
+  completed_workouts: [],
+  last_completed_date: null,
 };
 
 // Checklist history keyed by day (yyyy-mm-dd). Today derives from it, and it
@@ -107,6 +119,10 @@ interface AppStateValue {
     customTime: string | null;
   }) => void;
   resetOnboarding: () => void;
+  strengthProgress: StrengthProgress;
+  startStrengthPlan: (planId: string) => void;
+  leaveStrengthPlan: () => void;
+  completeStrengthWorkout: () => void;
   toggleDailyProgress: (key: keyof DailyProgress) => void;
   saveDailyReflection: (date: string, text: string) => void;
   setMode: (mode: UserMode) => void;
@@ -149,6 +165,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [dailyReflections, setDailyReflections] = useState<Record<string, string>>({});
   const [celebrationDate, setCelebrationDate] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingData>(defaultOnboarding);
+  const [strengthProgress, setStrengthProgress] =
+    useState<StrengthProgress>(defaultStrengthProgress);
 
   // ---- Remote sync helpers (no-ops unless signed in + configured) ----------
 
@@ -242,6 +260,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setDailyReflections(storedReflections);
     setCelebrationDate(readJSON<string | null>(CELEBRATION_KEY, null));
     setOnboarding(readJSON<OnboardingData>(ONBOARDING_KEY, defaultOnboarding));
+    setStrengthProgress(
+      readJSON<StrengthProgress>(STRENGTH_PROGRESS_KEY, defaultStrengthProgress)
+    );
     writeJSON(PROFILE_KEY, reconciled);
     setReady(true);
   }, []);
@@ -467,6 +488,68 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     writeJSON(ONBOARDING_KEY, defaultOnboarding);
   }, []);
 
+  // ---- Strength Journeys (Part 6: local-first; TODO Supabase sync) ---------
+
+  const startStrengthPlan = useCallback((planId: string) => {
+    const next: StrengthProgress = {
+      plan_id: planId,
+      start_date: todayKey(),
+      current_week: 1,
+      current_day: 1,
+      completed_workouts: [],
+      last_completed_date: null,
+    };
+    setStrengthProgress(next);
+    writeJSON(STRENGTH_PROGRESS_KEY, next);
+    // TODO(supabase): persist the selected plan + start date for the signed-in user.
+  }, []);
+
+  const leaveStrengthPlan = useCallback(() => {
+    setStrengthProgress(defaultStrengthProgress);
+    writeJSON(STRENGTH_PROGRESS_KEY, defaultStrengthProgress);
+    // TODO(supabase): clear the user's active strength plan.
+  }, []);
+
+  const completeStrengthWorkout = useCallback(() => {
+    // Advance the week/day pointer and record the completed workout.
+    setStrengthProgress((prev) => {
+      if (!prev.plan_id) return prev;
+      const plan = getStrengthPlanById(prev.plan_id);
+      if (!plan) return prev;
+      const key = `w${prev.current_week}d${prev.current_day}`;
+      let nextDay = prev.current_day + 1;
+      let nextWeek = prev.current_week;
+      if (nextDay > plan.days_per_week) {
+        nextDay = 1;
+        nextWeek = prev.current_week + 1;
+      }
+      const next: StrengthProgress = {
+        ...prev,
+        completed_workouts: prev.completed_workouts.includes(key)
+          ? prev.completed_workouts
+          : [...prev.completed_workouts, key],
+        last_completed_date: todayKey(),
+        current_week: nextWeek,
+        current_day: nextDay,
+      };
+      writeJSON(STRENGTH_PROGRESS_KEY, next);
+      // TODO(supabase): upsert completed workout + week/day pointer for the user.
+      return next;
+    });
+
+    // Connect to Today's Progress — mark the Workout item done (idempotent).
+    const today = todayKey();
+    setProgressHistory((prev) => {
+      const current = prev[today] ?? defaultProgress;
+      if (current.workout) return prev;
+      const nextProg = { ...current, workout: true };
+      const next = { ...prev, [today]: nextProg };
+      writeJSON(DAILY_PROGRESS_HISTORY_KEY, next);
+      remoteUpsertProgress(today, nextProg);
+      return next;
+    });
+  }, [remoteUpsertProgress]);
+
   const persistJournal = useCallback((entries: JournalEntry[]) => {
     setJournalEntries(entries);
     writeJSON(JOURNAL_KEY, entries);
@@ -566,6 +649,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     onboarding,
     completeOnboarding,
     resetOnboarding,
+    strengthProgress,
+    startStrengthPlan,
+    leaveStrengthPlan,
+    completeStrengthWorkout,
     toggleDailyProgress,
     saveDailyReflection,
     setMode,
