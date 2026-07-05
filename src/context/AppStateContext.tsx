@@ -12,14 +12,14 @@ import {
   DailyProgress,
   Devotion,
   JournalEntry,
+  JourneyProgress,
   OnboardingData,
-  StrengthProgress,
   UserMode,
   UserProfile,
 } from "@/types";
 import { devotions as seedDevotions } from "@/lib/data/devotions";
 import { ACTIVITY_STORAGE_KEY } from "@/lib/data/activities";
-import { getStrengthPlanById } from "@/lib/data/strength";
+import { getJourneyById } from "@/lib/data/journeys";
 import { readJSON, todayKey, writeJSON, yesterdayKey } from "@/lib/storage";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -32,7 +32,7 @@ const DAILY_PROGRESS_HISTORY_KEY = "daily-progress-history";
 const DAILY_REFLECTIONS_KEY = "daily-reflections";
 const CELEBRATION_KEY = "celebration-shown-date";
 const ONBOARDING_KEY = "onboarding";
-const STRENGTH_PROGRESS_KEY = "strength-progress";
+const JOURNEY_PROGRESS_KEY = "journey-progress";
 
 const defaultProfile: UserProfile = {
   display_name: "Friend",
@@ -60,8 +60,9 @@ const defaultOnboarding: OnboardingData = {
   preferred_activity: null,
 };
 
-const defaultStrengthProgress: StrengthProgress = {
+const defaultJourneyProgress: JourneyProgress = {
   plan_id: null,
+  category: null,
   start_date: null,
   current_week: 1,
   current_day: 1,
@@ -119,10 +120,10 @@ interface AppStateValue {
     customTime: string | null;
   }) => void;
   resetOnboarding: () => void;
-  strengthProgress: StrengthProgress;
-  startStrengthPlan: (planId: string) => void;
-  leaveStrengthPlan: () => void;
-  completeStrengthWorkout: () => void;
+  journeyProgress: JourneyProgress;
+  startJourney: (planId: string) => void;
+  leaveJourney: () => void;
+  completeJourneyDay: () => void;
   toggleDailyProgress: (key: keyof DailyProgress) => void;
   saveDailyReflection: (date: string, text: string) => void;
   setMode: (mode: UserMode) => void;
@@ -165,8 +166,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [dailyReflections, setDailyReflections] = useState<Record<string, string>>({});
   const [celebrationDate, setCelebrationDate] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingData>(defaultOnboarding);
-  const [strengthProgress, setStrengthProgress] =
-    useState<StrengthProgress>(defaultStrengthProgress);
+  const [journeyProgress, setJourneyProgress] =
+    useState<JourneyProgress>(defaultJourneyProgress);
 
   // ---- Remote sync helpers (no-ops unless signed in + configured) ----------
 
@@ -260,8 +261,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setDailyReflections(storedReflections);
     setCelebrationDate(readJSON<string | null>(CELEBRATION_KEY, null));
     setOnboarding(readJSON<OnboardingData>(ONBOARDING_KEY, defaultOnboarding));
-    setStrengthProgress(
-      readJSON<StrengthProgress>(STRENGTH_PROGRESS_KEY, defaultStrengthProgress)
+    setJourneyProgress(
+      readJSON<JourneyProgress>(JOURNEY_PROGRESS_KEY, defaultJourneyProgress)
     );
     writeJSON(PROFILE_KEY, reconciled);
     setReady(true);
@@ -488,42 +489,46 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     writeJSON(ONBOARDING_KEY, defaultOnboarding);
   }, []);
 
-  // ---- Strength Journeys (Part 6: local-first; TODO Supabase sync) ---------
+  // ---- Movement Journeys (Part 11: local-first; TODO Supabase sync) --------
 
-  const startStrengthPlan = useCallback((planId: string) => {
-    const next: StrengthProgress = {
+  const startJourney = useCallback((planId: string) => {
+    const journey = getJourneyById(planId);
+    if (!journey || journey.access !== "free") return; // locked plans can't start
+    const next: JourneyProgress = {
       plan_id: planId,
+      category: journey.category,
       start_date: todayKey(),
       current_week: 1,
       current_day: 1,
       completed_workouts: [],
       last_completed_date: null,
     };
-    setStrengthProgress(next);
-    writeJSON(STRENGTH_PROGRESS_KEY, next);
+    setJourneyProgress(next);
+    writeJSON(JOURNEY_PROGRESS_KEY, next);
     // TODO(supabase): persist the selected plan + start date for the signed-in user.
   }, []);
 
-  const leaveStrengthPlan = useCallback(() => {
-    setStrengthProgress(defaultStrengthProgress);
-    writeJSON(STRENGTH_PROGRESS_KEY, defaultStrengthProgress);
-    // TODO(supabase): clear the user's active strength plan.
+  const leaveJourney = useCallback(() => {
+    setJourneyProgress(defaultJourneyProgress);
+    writeJSON(JOURNEY_PROGRESS_KEY, defaultJourneyProgress);
+    // TODO(supabase): clear the user's active movement journey.
   }, []);
 
-  const completeStrengthWorkout = useCallback(() => {
-    // Advance the week/day pointer and record the completed workout.
-    setStrengthProgress((prev) => {
+  const completeJourneyDay = useCallback(() => {
+    // Advance the week/day pointer and record the completed day.
+    setJourneyProgress((prev) => {
       if (!prev.plan_id) return prev;
-      const plan = getStrengthPlanById(prev.plan_id);
-      if (!plan) return prev;
+      const journey = getJourneyById(prev.plan_id);
+      if (!journey) return prev;
+      const daysPerWeek = journey.days.length || 1;
       const key = `w${prev.current_week}d${prev.current_day}`;
       let nextDay = prev.current_day + 1;
       let nextWeek = prev.current_week;
-      if (nextDay > plan.days_per_week) {
+      if (nextDay > daysPerWeek) {
         nextDay = 1;
         nextWeek = prev.current_week + 1;
       }
-      const next: StrengthProgress = {
+      const next: JourneyProgress = {
         ...prev,
         completed_workouts: prev.completed_workouts.includes(key)
           ? prev.completed_workouts
@@ -532,8 +537,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         current_week: nextWeek,
         current_day: nextDay,
       };
-      writeJSON(STRENGTH_PROGRESS_KEY, next);
-      // TODO(supabase): upsert completed workout + week/day pointer for the user.
+      writeJSON(JOURNEY_PROGRESS_KEY, next);
+      // TODO(supabase): upsert completed day + week/day pointer for the user.
       return next;
     });
 
@@ -649,10 +654,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     onboarding,
     completeOnboarding,
     resetOnboarding,
-    strengthProgress,
-    startStrengthPlan,
-    leaveStrengthPlan,
-    completeStrengthWorkout,
+    journeyProgress,
+    startJourney,
+    leaveJourney,
+    completeJourneyDay,
     toggleDailyProgress,
     saveDailyReflection,
     setMode,

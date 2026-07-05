@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Dumbbell, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Dumbbell, Footprints, Sparkles } from "lucide-react";
 import { useAppState } from "@/context/AppStateContext";
 import { readJSON, todayKey, writeJSON } from "@/lib/storage";
 import {
@@ -11,25 +11,27 @@ import {
   activityOrder,
   defaultActivityId,
 } from "@/lib/data/activities";
-import { getStrengthPlanById } from "@/lib/data/strength";
-import { StrengthPlan, StrengthProgress } from "@/types";
+import { getJourneyById } from "@/lib/data/journeys";
+import { MovementJourney, JourneyProgress } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { AssignmentTimer } from "@/components/move/AssignmentTimer";
+import { WorkoutDetails } from "@/components/journeys/WorkoutDetails";
 
 const ACTIVITY_KEY = ACTIVITY_STORAGE_KEY;
 const COMPLETE_KEY = "assignment-complete-date";
 
 export default function MovePage() {
-  const { profile, strengthProgress, completeStrengthWorkout } = useAppState();
+  const { profile, journeyProgress, completeJourneyDay } = useAppState();
   const [showQuickActivity, setShowQuickActivity] = useState(false);
 
-  const strengthPlan = strengthProgress.plan_id
-    ? getStrengthPlanById(strengthProgress.plan_id)
+  const journey = journeyProgress.plan_id
+    ? getJourneyById(journeyProgress.plan_id)
     : undefined;
-  const strengthActive = Boolean(strengthPlan);
+  // Only free previews carry a startable schedule.
+  const journeyActive = Boolean(journey && journey.days.length > 0);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 md:px-8">
@@ -41,49 +43,50 @@ export default function MovePage() {
         <ModeToggle />
       </div>
 
-      {strengthActive && strengthPlan && !showQuickActivity ? (
-        <StrengthAssignment
+      {journeyActive && journey && !showQuickActivity ? (
+        <JourneyAssignment
+          journey={journey}
+          progress={journeyProgress}
+          onComplete={completeJourneyDay}
           onQuickActivity={() => setShowQuickActivity(true)}
-          plan={strengthPlan}
-          progress={strengthProgress}
-          onComplete={completeStrengthWorkout}
         />
       ) : (
         <ActivityAssignment
           profileMode={profile.mode}
-          showBackToStrength={strengthActive}
-          onBackToStrength={() => setShowQuickActivity(false)}
+          showBackToJourney={journeyActive}
+          onBackToJourney={() => setShowQuickActivity(false)}
         />
       )}
     </div>
   );
 }
 
-// ---- Strength Journey assignment ------------------------------------------
+// ---- Movement Journey assignment (running or strength) --------------------
 
-function StrengthAssignment({
-  plan,
+function JourneyAssignment({
+  journey,
   progress,
   onComplete,
   onQuickActivity,
 }: {
-  plan: StrengthPlan;
-  progress: StrengthProgress;
+  journey: MovementJourney;
+  progress: JourneyProgress;
   onComplete: () => void;
   onQuickActivity: () => void;
 }) {
-  const { leaveStrengthPlan } = useAppState();
-  const finished = progress.current_week > plan.duration_weeks;
+  const { leaveJourney } = useAppState();
+  const finished = progress.current_week > journey.duration_weeks;
   const doneToday = progress.last_completed_date === todayKey();
-  const workout = plan.workouts[progress.current_day - 1];
+  const day = journey.days[progress.current_day - 1];
+  const CategoryIcon = journey.category === "running" ? Footprints : Dumbbell;
 
   const manageLinks = (
     <div className="mt-4 flex flex-col items-center gap-1 text-xs text-muted">
       <button onClick={onQuickActivity} className="font-semibold text-gold-soft hover:text-gold">
         Prefer a quick activity today?
       </button>
-      <button onClick={leaveStrengthPlan} className="hover:text-foreground">
-        Leave Strength Journey
+      <button onClick={leaveJourney} className="hover:text-foreground">
+        Leave this Journey
       </button>
     </div>
   );
@@ -94,13 +97,13 @@ function StrengthAssignment({
         <CheckCircle2 size={28} className="mx-auto text-evergreen" />
         <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">Journey Complete</h2>
         <p className="mt-1 text-muted">
-          You finished {plan.title}. Well done staying faithful to the work.
+          You finished {journey.title}. Well done staying faithful to the work.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <Link href="/plans" className="flex-1">
-            <Button className="w-full">Start a New Journey</Button>
+            <Button className="w-full">Explore More Journeys</Button>
           </Link>
-          <Button variant="outline" className="flex-1" onClick={leaveStrengthPlan}>
+          <Button variant="outline" className="flex-1" onClick={leaveJourney}>
             Leave Plan
           </Button>
         </div>
@@ -108,14 +111,12 @@ function StrengthAssignment({
     );
   }
 
-  // Completed today — show rest state and a preview of what's next (not the
-  // full next workout, so it doesn't read as already done).
   if (doneToday) {
     return (
       <>
         <Card className="mt-5 border-evergreen/30 bg-evergreen/5">
           <Badge tone="evergreen">
-            <CheckCircle2 size={12} /> Today&apos;s Workout Complete
+            <CheckCircle2 size={12} /> Today&apos;s Assignment Complete
           </Badge>
           <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">Well done.</h2>
           <p className="mt-1 text-muted">
@@ -125,7 +126,7 @@ function StrengthAssignment({
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">
               Next up · Week {progress.current_week} · Day {progress.current_day}
             </p>
-            <p className="mt-1 font-serif text-lg font-semibold text-foreground">{workout.title}</p>
+            <p className="mt-1 font-serif text-lg font-semibold text-foreground">{day.title}</p>
           </div>
         </Card>
         {manageLinks}
@@ -138,42 +139,45 @@ function StrengthAssignment({
       <Card className="mt-5 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <Badge tone="gold">
-            <Dumbbell size={12} /> {plan.title}
+            <Sparkles size={12} /> Move with Purpose
           </Badge>
           <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Week {progress.current_week} · Day {progress.current_day}
+            Today&apos;s Assignment
           </span>
         </div>
 
-        <h2 className="mt-3 font-serif text-2xl font-bold text-foreground">{workout.title}</h2>
-        <p className="mt-1 text-muted">{workout.purpose}</p>
+        <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-soft">
+          <CategoryIcon size={13} /> {journey.title} · Week {progress.current_week} · Day{" "}
+          {progress.current_day}
+        </p>
+        <h2 className="mt-1 font-serif text-2xl font-bold text-foreground">{day.title}</h2>
+        <p className="mt-1 text-muted">{day.purpose}</p>
 
         <div className="mt-4 rounded-xl border border-border-subtle bg-surface-raised p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Workout</p>
-          <ul className="mt-2 flex flex-col gap-2">
-            {workout.exercises.map((ex) => (
-              <li key={ex.name} className="flex items-baseline justify-between gap-3 text-sm">
-                <span className="font-medium text-foreground">{ex.name}</span>
-                <span className="shrink-0 text-muted">{ex.scheme}</span>
-              </li>
-            ))}
-          </ul>
+          <WorkoutDetails day={day} />
         </div>
 
         <div className="mt-3 flex items-start gap-2 rounded-lg bg-gold/10 p-3 text-sm text-foreground">
           <Sparkles size={15} className="mt-0.5 shrink-0 text-gold-soft" />
           <span>
             <span className="font-semibold text-gold-soft">Faith Focus: </span>
-            {workout.faith_focus}
+            {day.faith_focus}
           </span>
         </div>
 
-        <AssignmentTimer
-          key={`${progress.current_week}-${progress.current_day}`}
-          kind="countup"
-          durationSec={null}
-          onFinish={onComplete}
-        />
+        {day.is_rest ? (
+          <Button className="mt-5 w-full" onClick={onComplete}>
+            <CheckCircle2 size={16} /> Mark Complete
+          </Button>
+        ) : (
+          <AssignmentTimer
+            key={`${progress.current_week}-${progress.current_day}`}
+            kind={day.timer_kind}
+            durationSec={day.timer_seconds}
+            onFinish={onComplete}
+          />
+        )}
       </Card>
 
       {manageLinks}
@@ -185,12 +189,12 @@ function StrengthAssignment({
 
 function ActivityAssignment({
   profileMode,
-  showBackToStrength,
-  onBackToStrength,
+  showBackToJourney,
+  onBackToJourney,
 }: {
   profileMode: "leisure" | "athlete";
-  showBackToStrength: boolean;
-  onBackToStrength: () => void;
+  showBackToJourney: boolean;
+  onBackToJourney: () => void;
 }) {
   const { dailyProgress, toggleDailyProgress } = useAppState();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -219,12 +223,12 @@ function ActivityAssignment({
 
   return (
     <>
-      {showBackToStrength && (
+      {showBackToJourney && (
         <button
-          onClick={onBackToStrength}
+          onClick={onBackToJourney}
           className="mt-4 flex items-center gap-1 text-sm font-semibold text-gold-soft hover:text-gold"
         >
-          <ArrowLeft size={15} /> Back to your Strength Journey
+          <ArrowLeft size={15} /> Back to your Journey
         </button>
       )}
 

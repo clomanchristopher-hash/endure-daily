@@ -39,38 +39,51 @@ export interface JournalEntry {
   created_at: string; // ISO timestamp
 }
 
-// ---- Strength Journeys -----------------------------------------------------
+// ---- Movement Journeys (Running + Strength) --------------------------------
 
-export interface StrengthExercise {
+export type JourneyCategory = "running" | "strength";
+export type JourneyLevel = "foundation" | "challenge";
+// Access tier. Free previews are startable now; premium is visible but locked.
+// TODO(premium): gate "premium" behind real subscription/entitlement checks
+// once payments exist. For now premium simply means locked / Coming Soon.
+export type JourneyAccess = "free" | "premium";
+
+export interface JourneyExercise {
   name: string;
   scheme: string; // e.g. "3 sets of 8–10"
 }
 
-export interface StrengthWorkout {
+export interface JourneyDay {
   day: number; // 1-based day within the week
-  title: string; // e.g. "Upper Body Foundation"
+  title: string;
   purpose: string;
-  exercises: StrengthExercise[];
+  workout_text?: string; // simple prose workout (running / rest / mobility)
+  exercises?: JourneyExercise[]; // structured list (strength)
   faith_focus: string;
+  is_rest?: boolean; // rest day — no timer, just mark complete
+  timer_kind: "countdown" | "countup";
+  timer_seconds: number | null; // for countdown
 }
 
-export type StrengthLane = "foundation" | "challenge";
-
-export interface StrengthPlan {
+export interface MovementJourney {
   id: string;
+  category: JourneyCategory;
   title: string;
   description: string;
-  lane: StrengthLane;
-  days_per_week: number;
+  level: JourneyLevel;
+  access: JourneyAccess;
   duration_weeks: number;
-  // The one-week template; repeated each week for the plan's duration.
-  workouts: StrengthWorkout[];
+  distance?: string; // running only, e.g. "5K"
+  // One-week schedule. Populated for free previews; empty for locked premium
+  // plans (their guided content ships with the paid release).
+  days: JourneyDay[];
 }
 
-// Local progress for an active Strength Journey (Part 6). The week/day pointer
-// advances as the user completes each workout.
-export interface StrengthProgress {
+// Local progress for an active Movement Journey. The week/day pointer advances
+// as the user completes each day.
+export interface JourneyProgress {
   plan_id: string | null;
+  category: JourneyCategory | null;
   start_date: string | null; // yyyy-mm-dd
   current_week: number; // 1-based
   current_day: number; // 1-based day within the week
