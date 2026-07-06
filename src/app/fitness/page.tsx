@@ -8,7 +8,7 @@ import { readJSON, todayKey, writeJSON } from "@/lib/storage";
 import {
   ACTIVITY_STORAGE_KEY,
   activities,
-  activityOrder,
+  activitiesForLane,
   defaultActivityId,
 } from "@/lib/data/activities";
 import { getJourneyById } from "@/lib/data/journeys";
@@ -96,8 +96,18 @@ function MoveContent() {
         ))}
       </div>
 
-      {tab === "foundation" && <ActivityAssignment key="foundation" lane="leisure" />}
-      {tab === "challenge" && <ActivityAssignment key="challenge" lane="athlete" />}
+      {tab !== "journeys" && (
+        <p className="mt-2 text-xs text-muted">
+          Choose Foundation for lighter movement or Challenge for higher-effort assignments.
+        </p>
+      )}
+
+      {tab === "foundation" && (
+        <ActivityAssignment key="foundation" lane="leisure" hasActiveJourney={Boolean(activeJourney)} />
+      )}
+      {tab === "challenge" && (
+        <ActivityAssignment key="challenge" lane="athlete" hasActiveJourney={Boolean(activeJourney)} />
+      )}
       {tab === "journeys" &&
         (activeJourney && journeyView === "assignment" ? (
           <JourneyAssignment
@@ -306,7 +316,13 @@ function JourneyAssignment({
 
 // ---- Foundation / Challenge daily activity assignment ---------------------
 
-function ActivityAssignment({ lane }: { lane: UserMode }) {
+function ActivityAssignment({
+  lane,
+  hasActiveJourney,
+}: {
+  lane: UserMode;
+  hasActiveJourney: boolean;
+}) {
   const { dailyProgress, toggleDailyProgress } = useAppState();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
@@ -315,12 +331,16 @@ function ActivityAssignment({ lane }: { lane: UserMode }) {
   // lanes shows the right default (walk vs run) instead of one shared choice.
   const laneKey = `${ACTIVITY_KEY}-${lane}`;
 
+  const laneName = lane === "athlete" ? "challenge" : "foundation";
+
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const savedId = readJSON<string | null>(laneKey, null);
-    setSelectedId(savedId && activities[savedId] ? savedId : null);
+    // Only honor a saved activity that belongs to this lane.
+    const valid = savedId && activities[savedId]?.lane === laneName;
+    setSelectedId(valid ? savedId : null);
     setCompleted(readJSON<string | null>(COMPLETE_KEY, null) === todayKey());
-  }, [laneKey]);
+  }, [laneKey, laneName]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const activity = activities[selectedId ?? defaultActivityId(lane)];
@@ -338,6 +358,12 @@ function ActivityAssignment({ lane }: { lane: UserMode }) {
 
   return (
     <>
+      {hasActiveJourney && (
+        <p className="mt-4 rounded-lg border border-border-subtle bg-surface-raised px-3 py-2.5 text-xs text-muted">
+          Active Journey assignment is currently guiding today&apos;s movement.
+        </p>
+      )}
+
       <Card className="mt-5 border-gold/30 bg-gold/5">
         <div className="flex items-center justify-between">
           <Badge tone="gold">
@@ -370,7 +396,7 @@ function ActivityAssignment({ lane }: { lane: UserMode }) {
         More Activities
       </h3>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {activityOrder.map((id) => {
+        {activitiesForLane(lane).map((id) => {
           const a = activities[id];
           const active = a.id === activity.id;
           return (

@@ -17,6 +17,7 @@ export function ReflectionCard({
 }) {
   const { ready, dailyReflections, saveDailyReflection } = useAppState();
   const today = todayKey();
+  const savedToday = (dailyReflections[today] ?? "").trim().length > 0;
 
   return (
     <Card className="mt-4">
@@ -35,13 +36,20 @@ export function ReflectionCard({
         />
       )}
 
-      <Link
-        href={journalHref}
-        className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-soft hover:text-gold"
-      >
-        <NotebookPen size={15} />
-        Open in Journal
-      </Link>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <Link
+          href={journalHref}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-gold-soft hover:text-gold"
+        >
+          <NotebookPen size={15} />
+          Open Journal
+        </Link>
+        {ready && savedToday && (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-evergreen">
+            <Check size={13} /> Saved to Journal
+          </span>
+        )}
+      </div>
     </Card>
   );
 }

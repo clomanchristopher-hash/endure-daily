@@ -23,6 +23,11 @@ export function JournalPageClient() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
+  // Newest date first so today's entries (incl. the synced reflection) sit up top.
+  const sortedEntries = [...journalEntries].sort(
+    (a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at)
+  );
+
   function handleSave() {
     if (!content.trim()) return;
     addJournalEntry({
@@ -67,41 +72,53 @@ export function JournalPageClient() {
         {journalEntries.length === 0 && (
           <p className="text-sm text-muted">No entries yet. Your first reflection starts above.</p>
         )}
-        {journalEntries.map((entry) => (
+        {sortedEntries.map((entry) => {
+          const isReflection = entry.source === "reflection";
+          return (
           <Card key={entry.id}>
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted">
                   {entry.date}
                 </p>
-                {entry.devotion_title && (
+                {isReflection ? (
                   <Badge tone="gold" className="mt-1">
-                    {entry.devotion_title}
+                    Today&apos;s Reflection
                   </Badge>
+                ) : (
+                  entry.devotion_title && (
+                    <Badge tone="gold" className="mt-1">
+                      {entry.devotion_title}
+                    </Badge>
+                  )
                 )}
               </div>
-              <div className="flex gap-2">
-                <button
-                  aria-label="Edit entry"
-                  className="text-muted hover:text-gold-soft"
-                  onClick={() => {
-                    setEditingId(entry.id);
-                    setEditContent(entry.content);
-                  }}
-                >
-                  <Pencil size={15} />
-                </button>
-                <button
-                  aria-label="Delete entry"
-                  className="text-muted hover:text-ember"
-                  onClick={() => deleteJournalEntry(entry.id)}
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
+              {/* Reflection entries are synced from the Today screen — edit them
+                  there to keep the two in step. */}
+              {!isReflection && (
+                <div className="flex gap-2">
+                  <button
+                    aria-label="Edit entry"
+                    className="text-muted hover:text-gold-soft"
+                    onClick={() => {
+                      setEditingId(entry.id);
+                      setEditContent(entry.content);
+                    }}
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  <button
+                    aria-label="Delete entry"
+                    className="text-muted hover:text-ember"
+                    onClick={() => deleteJournalEntry(entry.id)}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              )}
             </div>
 
-            {editingId === entry.id ? (
+            {!isReflection && editingId === entry.id ? (
               <div className="mt-2">
                 <textarea
                   value={editContent}
@@ -129,7 +146,8 @@ export function JournalPageClient() {
               </p>
             )}
           </Card>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -442,11 +442,42 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const saveDailyReflection = useCallback(
     (date: string, text: string) => {
+      const trimmed = text.trim();
       setDailyReflections((prev) => {
-        const next = { ...prev, [date]: text };
+        const next = { ...prev, [date]: trimmed };
         writeJSON(DAILY_REFLECTIONS_KEY, next);
-        remoteUpsertReflection(date, text);
+        remoteUpsertReflection(date, trimmed);
         return next;
+      });
+
+      // Mirror the reflection into the Journal as a single per-day entry so
+      // Today's Reflection and the Journal stay connected. A deterministic id
+      // means later edits update the same entry instead of duplicating, and
+      // manually-created entries (other ids) are never touched.
+      // TODO(supabase): sync reflection-sourced journal entries alongside the
+      // reflections table.
+      const reflectionId = `reflection-${date}`;
+      setJournalEntries((prev) => {
+        const others = prev.filter((e) => e.id !== reflectionId);
+        let nextEntries: JournalEntry[];
+        if (!trimmed) {
+          // Cleared reflection removes only its own auto-entry.
+          nextEntries = others;
+        } else {
+          const existing = prev.find((e) => e.id === reflectionId);
+          const entry: JournalEntry = {
+            id: reflectionId,
+            devotion_id: null,
+            devotion_title: null,
+            source: "reflection",
+            date,
+            content: trimmed,
+            created_at: existing?.created_at ?? new Date().toISOString(),
+          };
+          nextEntries = [entry, ...others];
+        }
+        writeJSON(JOURNAL_KEY, nextEntries);
+        return nextEntries;
       });
     },
     [remoteUpsertReflection]

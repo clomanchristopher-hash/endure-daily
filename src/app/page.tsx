@@ -95,7 +95,7 @@ export default function HomePage() {
       {/* 7. Reflection */}
       <ReflectionCard
         question={devotion.reflection_question}
-        journalHref={`/journal?devotionId=${devotion.id}`}
+        journalHref="/journal"
       />
 
       {/* 8. Daily Challenge */}

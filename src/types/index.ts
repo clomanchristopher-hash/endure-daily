@@ -37,6 +37,9 @@ export interface JournalEntry {
   date: string; // yyyy-mm-dd
   content: string;
   created_at: string; // ISO timestamp
+  // "reflection" = auto-synced from Today's Reflection (one per day, read-only
+  // in the Journal). Absent/"manual" = user-created journal entry.
+  source?: "reflection" | "manual";
 }
 
 // ---- Movement Journeys (Running + Strength) --------------------------------
