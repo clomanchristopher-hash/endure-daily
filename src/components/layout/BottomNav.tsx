@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Menu, RotateCcw, X } from "lucide-react";
 import { primaryNavItems, secondaryNavItems } from "./nav-items";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { useAppState } from "@/context/AppStateContext";
 
 export function BottomNav() {
@@ -70,6 +71,8 @@ export function BottomNav() {
             </button>
 
             <FeedbackButton className="mt-3 border-t border-border-subtle pt-4" />
+
+            <LegalLinks className="mt-3" onNavigate={() => setMoreOpen(false)} />
           </div>
         </div>
       )}

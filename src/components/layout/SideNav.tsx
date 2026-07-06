@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Cross } from "lucide-react";
 import { primaryNavItems, secondaryNavItems } from "./nav-items";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 
 export function SideNav() {
   const pathname = usePathname();
@@ -45,6 +46,8 @@ export function SideNav() {
         <p className="font-semibold text-gold-soft">Endure Daily</p>
         <p className="mt-1">Train your body. Anchor your soul.</p>
       </div>
+
+      <LegalLinks className="mt-3" />
     </aside>
   );
 }

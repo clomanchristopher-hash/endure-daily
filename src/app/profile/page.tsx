@@ -5,6 +5,7 @@ import {
   Bell,
   BookOpenText,
   CheckCircle2,
+  ChevronRight,
   Crown,
   Dumbbell,
   Flame,
@@ -144,8 +145,8 @@ export default function ProfilePage() {
         />
         <PremiumLockCard
           icon={CreditCard}
-          title="Stripe Subscription"
-          description="Manage your subscription and billing directly in-app."
+          title="Subscriptions & Billing"
+          description="Manage your plan and billing once premium journeys arrive."
         />
         <PremiumLockCard
           icon={Trophy}
@@ -154,7 +155,25 @@ export default function ProfilePage() {
         />
       </div>
 
-      <p className="mt-10 border-t border-border-subtle pt-6 text-center text-xs text-muted">
+      <h2 className="mt-10 font-serif text-lg font-semibold text-foreground">Legal &amp; Support</h2>
+      <div className="mt-3 flex flex-col gap-2">
+        {[
+          { href: "/privacy", label: "Privacy Policy" },
+          { href: "/terms", label: "Terms of Use" },
+          { href: "/support", label: "Support" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex items-center justify-between rounded-lg border border-border-subtle bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-gold/40"
+          >
+            {item.label}
+            <ChevronRight size={16} className="text-muted" />
+          </Link>
+        ))}
+      </div>
+
+      <p className="mt-8 border-t border-border-subtle pt-6 text-center text-xs text-muted">
         Scripture quotations are from the Berean Standard Bible (BSB).
       </p>
     </div>
