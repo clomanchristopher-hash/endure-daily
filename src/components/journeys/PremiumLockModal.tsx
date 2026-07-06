@@ -5,8 +5,9 @@ import { JourneyCategory } from "@/types";
 import { premiumMessage } from "@/lib/data/journeys";
 import { Button } from "@/components/ui/Button";
 
-// Friendly "Coming Soon" message for locked premium journeys. No payment logic
-// yet — TODO(premium): replace with a real upgrade flow once subscriptions ship.
+// Polished future-release message for locked premium journeys. No pricing or
+// purchase yet — TODO(premium): replace with a real upgrade flow once IAP /
+// subscriptions ship (RevenueCat / Apple IAP on iOS, Stripe on web).
 export function PremiumLockModal({
   category,
   onClose,
@@ -31,7 +32,10 @@ export function PremiumLockModal({
         <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gold/15 text-gold-soft">
           <Lock size={22} />
         </span>
-        <h2 className="font-serif text-xl font-bold text-foreground">{msg.title}</h2>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gold-soft">
+          {msg.eyebrow}
+        </p>
+        <h2 className="mt-1 font-serif text-xl font-bold text-foreground">{msg.title}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">{msg.body}</p>
         <Button className="mt-6 w-full" onClick={onClose}>
           Got it

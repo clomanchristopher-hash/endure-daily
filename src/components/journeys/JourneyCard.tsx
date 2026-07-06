@@ -46,7 +46,7 @@ export function JourneyCard({
           free ? "text-gold-soft" : "text-muted"
         }`}
       >
-        {free ? "Start Plan →" : "Coming Soon"}
+        {free ? "Start Plan →" : "Premium Journey Preview"}
       </p>
     </Card>
   );
@@ -55,7 +55,11 @@ export function JourneyCard({
     return <Link href={`/journeys/${journey.id}`}>{inner}</Link>;
   }
   return (
-    <button onClick={onLockedClick} className="w-full text-left" aria-label={`${journey.title} — Premium, coming soon`}>
+    <button
+      onClick={onLockedClick}
+      className="w-full text-left"
+      aria-label={`${journey.title} — Premium Journey Preview, available in a future release`}
+    >
       {inner}
     </button>
   );

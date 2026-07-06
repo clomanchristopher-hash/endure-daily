@@ -139,7 +139,7 @@ export function JourneyDetail({ id }: { id: string }) {
           </div>
         </>
       ) : (
-        // Locked premium — Coming Soon state (no schedule / start).
+        // Locked premium — intentional future-release preview (no schedule / start).
         <LockedState category={journey.category} />
       )}
 
@@ -162,7 +162,10 @@ function LockedState({ category }: { category: "running" | "strength" }) {
       <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gold/15 text-gold-soft">
         <Lock size={22} />
       </span>
-      <h2 className="font-serif text-lg font-bold text-foreground">{msg.title}</h2>
+      <p className="text-xs font-semibold uppercase tracking-wider text-gold-soft">
+        {msg.eyebrow}
+      </p>
+      <h2 className="mt-1 font-serif text-lg font-bold text-foreground">{msg.title}</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">{msg.body}</p>
       <Link href="/plans" className="mt-4 inline-block">
         <Button variant="outline">Got it</Button>

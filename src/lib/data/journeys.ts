@@ -5,9 +5,11 @@ import { MovementJourney } from "@/types";
 // training. No copyrighted text, branding, athlete/supplement names, or exact
 // third-party workout descriptions.
 //
-// Free previews ship full 1-week schedules. Premium journeys are visible but
-// locked (Coming Soon); their guided content arrives with the paid release.
-// TODO(premium): replace the access gate with real subscription entitlement.
+// Free previews ship full 1-week schedules. Premium journeys are visible as
+// intentional future-release previews (not purchasable yet); their full guided
+// content arrives in a future release.
+// TODO(premium): gate access with real entitlement once IAP/subscriptions ship
+// (RevenueCat / Apple In-App Purchase on iOS, Stripe on web).
 
 const runningJourneys: MovementJourney[] = [
   {
@@ -287,19 +289,25 @@ export function getJourneysByCategory(category: MovementJourney["category"]): Mo
   return journeys.filter((j) => j.category === category);
 }
 
-// Category-specific "Coming Soon" copy for locked premium plans.
+// Polished future-release copy for locked premium plans. No pricing/purchase
+// here — these are shown as intentional previews of what's being prepared.
 export function premiumMessage(category: MovementJourney["category"]): {
+  eyebrow: string;
   title: string;
   body: string;
 } {
+  const eyebrow = "Premium Journey Preview";
+  const title = "Premium Journeys will be available in a future release.";
   if (category === "running") {
     return {
-      title: "Premium Running Journeys are coming soon.",
-      body: "These journeys will help you build endurance with guided training, recovery, and faith-centered discipline.",
+      eyebrow,
+      title,
+      body: "Full guided running journeys — with training, recovery, and faith-centered discipline — are being prepared for a future release.",
     };
   }
   return {
-    title: "Premium Strength Journeys are coming soon.",
-    body: "These journeys will help you build strength with purpose through guided workouts, recovery, and faith-centered discipline.",
+    eyebrow,
+    title,
+    body: "Full guided strength journeys — with guided workouts, recovery, and faith-centered discipline — are being prepared for a future release.",
   };
 }

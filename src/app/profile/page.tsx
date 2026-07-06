@@ -121,10 +121,10 @@ export default function ProfilePage() {
 
       <div className="mt-10 flex items-center gap-2">
         <Crown size={18} className="text-gold-soft" />
-        <h2 className="font-serif text-lg font-semibold text-foreground">Premium — Coming Soon</h2>
+        <h2 className="font-serif text-lg font-semibold text-foreground">Premium — Future Releases</h2>
       </div>
       <p className="mt-1 text-sm text-muted">
-        Endure Daily is free today. These features are in development for future release.
+        Endure Daily is free today. These features are being prepared for a future release.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <PremiumLockCard

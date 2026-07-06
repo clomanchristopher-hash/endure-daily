@@ -46,9 +46,10 @@ export interface JournalEntry {
 
 export type JourneyCategory = "running" | "strength";
 export type JourneyLevel = "foundation" | "challenge";
-// Access tier. Free previews are startable now; premium is visible but locked.
-// TODO(premium): gate "premium" behind real subscription/entitlement checks
-// once payments exist. For now premium simply means locked / Coming Soon.
+// Access tier. Free previews are startable now; premium is visible as an
+// intentional future-release preview (not purchasable yet).
+// TODO(premium): gate "premium" behind real entitlement once IAP/subscriptions
+// ship (RevenueCat / Apple In-App Purchase on iOS, Stripe on web).
 export type JourneyAccess = "free" | "premium";
 
 export interface JourneyExercise {
