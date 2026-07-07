@@ -49,6 +49,7 @@ const defaultProgress: DailyProgress = {
   scripture: false,
   devotion: false,
   prayer: false,
+  reflection: false,
   workout: false,
 };
 
@@ -296,6 +297,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             scripture: r.scripture,
             devotion: r.devotion,
             prayer: r.prayer,
+            reflection: r.reflection,
             workout: r.workout,
           };
         });
@@ -667,6 +669,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     dailyProgress.scripture &&
     dailyProgress.devotion &&
     dailyProgress.prayer &&
+    dailyProgress.reflection &&
     dailyProgress.workout;
   const celebrationSeenToday = celebrationDate === todayKey();
 

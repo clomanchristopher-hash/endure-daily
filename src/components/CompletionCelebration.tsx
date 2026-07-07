@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAppState } from "@/context/AppStateContext";
 import { Button } from "@/components/ui/Button";
 
-// Shown once per day when all four Today's Progress items are complete.
+// Shown once per day when all Today's Progress items are complete.
 // Renders globally (see layout) so it can appear immediately even if the last
 // item is completed from the Move tab, or on return to Today.
 export function CompletionCelebration() {

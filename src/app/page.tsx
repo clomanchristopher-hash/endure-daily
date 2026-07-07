@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { ModeToggle } from "@/components/ui/ModeToggle";
 import { Greeting } from "@/components/home/Greeting";
 import { DailyProgressCard } from "@/components/home/DailyProgressCard";
+import { DailyRhythmCard } from "@/components/home/DailyRhythmCard";
 import { ReflectionCard } from "@/components/home/ReflectionCard";
 
 export default function HomePage() {
@@ -44,6 +45,9 @@ export default function HomePage() {
 
       {/* 2. Daily Progress */}
       <DailyProgressCard />
+
+      {/* 2.5. Daily Rhythm */}
+      <DailyRhythmCard />
 
       {/* 3. Theme of the Day */}
       <Card className="mt-4 bg-gradient-to-br from-surface-raised to-surface">

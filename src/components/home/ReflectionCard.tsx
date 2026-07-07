@@ -15,7 +15,7 @@ export function ReflectionCard({
   question: string;
   journalHref: string;
 }) {
-  const { ready, dailyReflections, saveDailyReflection } = useAppState();
+  const { ready, dailyReflections, dailyProgress, saveDailyReflection, toggleDailyProgress } = useAppState();
   const today = todayKey();
   const savedToday = (dailyReflections[today] ?? "").trim().length > 0;
 
@@ -32,7 +32,14 @@ export function ReflectionCard({
         <ReflectionForm
           key={today}
           initial={dailyReflections[today] ?? ""}
-          onSave={(text) => saveDailyReflection(today, text)}
+          onSave={(text) => {
+            const hasSavedContent = text.trim().length > 0;
+            saveDailyReflection(today, text);
+            // Only toggle if the desired state differs from current state
+            if (hasSavedContent !== dailyProgress.reflection) {
+              toggleDailyProgress("reflection");
+            }
+          }}
         />
       )}
 
