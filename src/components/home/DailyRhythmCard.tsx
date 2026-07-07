@@ -4,32 +4,41 @@ import { useEffect, useState } from "react";
 import { Clock, Sun, Cloud, Moon } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
-const RHYTHM_TIMES = {
-  morning: { start: 5, end: 12, label: "Morning", icon: Sun, activity: "Scripture & Prayer" },
-  afternoon: { start: 12, end: 17, label: "Afternoon", icon: Cloud, activity: "Devotion & Reflection" },
-  evening: { start: 17, end: 21, label: "Evening", icon: Moon, activity: "Reflection & Planning" },
+type RhythmTab = "morning" | "afternoon" | "evening";
+
+const RHYTHM_DATA: Record<RhythmTab, { label: string; timeRange: string; icon: React.ComponentType<{ size: number; className?: string }>; content: string; description: string }> = {
+  morning: {
+    label: "Morning",
+    timeRange: "5 AM – 12 PM",
+    icon: Sun,
+    content: "Scripture + Prayer",
+    description: "Start your day rooted in the Word.",
+  },
+  afternoon: {
+    label: "Afternoon",
+    timeRange: "12 PM – 5 PM",
+    icon: Cloud,
+    content: "Devotion Check-In",
+    description: "Pause and revisit today's mission.",
+  },
+  evening: {
+    label: "Evening",
+    timeRange: "5 PM – 9 PM",
+    icon: Moon,
+    content: "Reflection",
+    description: "Look back and write how you lived it out.",
+  },
 };
 
-type RhythmPeriod = keyof typeof RHYTHM_TIMES;
-
-function getCurrentPeriod(hour: number): RhythmPeriod {
-  if (hour >= RHYTHM_TIMES.morning.start && hour < RHYTHM_TIMES.morning.end) return "morning";
-  if (hour >= RHYTHM_TIMES.afternoon.start && hour < RHYTHM_TIMES.afternoon.end) return "afternoon";
-  if (hour >= RHYTHM_TIMES.evening.start && hour < RHYTHM_TIMES.evening.end) return "evening";
-  return "morning"; // default to morning for early morning/night
-}
-
-function getNextPeriod(hour: number): RhythmPeriod {
-  const current = getCurrentPeriod(hour);
-  if (current === "morning") return "afternoon";
-  if (current === "afternoon") return "evening";
-  return "morning";
+function getCurrentTab(hour: number): RhythmTab {
+  if (hour < 12) return "morning";
+  if (hour < 17) return "afternoon";
+  return "evening";
 }
 
 export function DailyRhythmCard() {
   const [time, setTime] = useState<string>("");
-  const [period, setPeriod] = useState<RhythmPeriod>("morning");
-  const [nextPeriod, setNextPeriod] = useState<RhythmPeriod>("afternoon");
+  const [selectedTab, setSelectedTab] = useState<RhythmTab>("morning");
 
   useEffect(() => {
     const updateTime = () => {
@@ -41,8 +50,7 @@ export function DailyRhythmCard() {
         hour12: true,
       });
       setTime(formatted);
-      setPeriod(getCurrentPeriod(hour));
-      setNextPeriod(getNextPeriod(hour));
+      setSelectedTab(getCurrentTab(hour));
     };
 
     updateTime();
@@ -50,10 +58,8 @@ export function DailyRhythmCard() {
     return () => clearInterval(interval);
   }, []);
 
-  const current = RHYTHM_TIMES[period];
-  const next = RHYTHM_TIMES[nextPeriod];
-  const CurrentIcon = current.icon;
-  const NextIcon = next.icon;
+  const currentData = RHYTHM_DATA[selectedTab];
+  const CurrentIcon = currentData.icon;
 
   return (
     <Card className="mt-4 border-gold/30 bg-gold/5">
@@ -66,28 +72,39 @@ export function DailyRhythmCard() {
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        {/* Current Period */}
-        <div className="rounded-lg border border-gold/30 bg-surface-raised p-3">
-          <div className="flex items-center gap-2">
-            <CurrentIcon size={16} className="text-gold" />
-            <p className="text-xs font-semibold uppercase text-gold-soft">{current.label}</p>
-          </div>
-          <p className="mt-1.5 text-sm font-medium text-foreground">{current.activity}</p>
-        </div>
+      {/* Tab Navigation */}
+      <div className="mt-4 flex gap-2">
+        {(["morning", "afternoon", "evening"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setSelectedTab(tab)}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold uppercase transition-colors ${
+              selectedTab === tab
+                ? "bg-gold text-[#0d1510]"
+                : "border border-gold/30 bg-surface-raised text-foreground hover:border-gold/50 hover:bg-gold/10"
+            }`}
+          >
+            {RHYTHM_DATA[tab].label}
+          </button>
+        ))}
+      </div>
 
-        {/* Next Period */}
-        <div className="rounded-lg border border-border-subtle bg-surface-raised p-3">
-          <div className="flex items-center gap-2">
-            <NextIcon size={16} className="text-muted" />
-            <p className="text-xs font-semibold uppercase text-muted">Next: {next.label}</p>
+      {/* Content */}
+      <div className="mt-4 rounded-lg border border-gold/20 bg-surface-raised p-4">
+        <div className="flex items-start gap-3">
+          <CurrentIcon size={18} className="mt-0.5 shrink-0 text-gold" />
+          <div className="flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gold-soft">
+              {currentData.label} · {currentData.timeRange}
+            </p>
+            <p className="mt-1.5 font-serif text-lg font-bold text-foreground">{currentData.content}</p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/80">{currentData.description}</p>
           </div>
-          <p className="mt-1.5 text-sm font-medium text-foreground/70">{next.activity}</p>
         </div>
       </div>
 
       <p className="mt-3 text-xs text-muted">
-        A natural cadence to help you stay connected throughout the day. No deadlines, just gentle guidance.
+        A natural cadence. No deadlines—just guidance.
       </p>
     </Card>
   );
