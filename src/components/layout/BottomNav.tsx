@@ -23,7 +23,7 @@ export function BottomNav() {
           onClick={() => setMoreOpen(false)}
         >
           <div
-            className="absolute bottom-16 left-0 right-0 rounded-t-2xl border-t border-border-subtle bg-surface p-3"
+            className="absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 rounded-t-2xl border-t border-border-subtle bg-surface p-3"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-2 flex items-center justify-between px-2">
@@ -77,32 +77,34 @@ export function BottomNav() {
         </div>
       )}
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch border-t border-border-subtle bg-surface/95 backdrop-blur md:hidden">
-        {primaryNavItems.map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium ${
-                active ? "text-gold-soft" : "text-muted"
-              }`}
-            >
-              <Icon size={20} />
-              {item.label}
-            </Link>
-          );
-        })}
-        <button
-          onClick={() => setMoreOpen((v) => !v)}
-          className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium ${
-            moreActive || moreOpen ? "text-gold-soft" : "text-muted"
-          }`}
-        >
-          <Menu size={20} />
-          More
-        </button>
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+        <div className="flex h-16 items-stretch">
+          {primaryNavItems.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium ${
+                  active ? "text-gold-soft" : "text-muted"
+                }`}
+              >
+                <Icon size={20} />
+                {item.label}
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMoreOpen((v) => !v)}
+            className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium ${
+              moreActive || moreOpen ? "text-gold-soft" : "text-muted"
+            }`}
+          >
+            <Menu size={20} />
+            More
+          </button>
+        </div>
       </nav>
     </>
   );

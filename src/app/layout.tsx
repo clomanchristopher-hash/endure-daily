@@ -22,15 +22,32 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  applicationName: "Endure Daily",
   title: "Endure Daily — Faith & Fitness Devotional",
   description:
     "Daily Scripture, devotion, prayer, and movement challenges for Christians building strength in body and spirit.",
+  manifest: "/manifest.webmanifest",
+  // iOS "Add to Home Screen": launch standalone (no Safari chrome) with a clean
+  // title and status bar. Payments are not enabled — this is display-only.
+  appleWebApp: {
+    capable: true,
+    title: "Endure Daily",
+    statusBarStyle: "default",
+  },
+  // iOS Safari still reads the apple-prefixed flag for standalone launch;
+  // Next 16 only emits the modern "mobile-web-app-capable", so add it explicitly.
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#0d1510",
   width: "device-width",
   initialScale: 1,
+  // Let content extend under the notch/home indicator; safe-area insets are
+  // then respected by the fixed bottom nav.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
