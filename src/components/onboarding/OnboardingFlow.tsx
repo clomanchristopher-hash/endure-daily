@@ -267,7 +267,7 @@ function Chip({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors ${
+      className={`rounded-full border px-4 py-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2 ${
         active
           ? "border-transparent bg-gold text-[#0d1510]"
           : "border-border-subtle bg-surface text-muted hover:text-foreground"

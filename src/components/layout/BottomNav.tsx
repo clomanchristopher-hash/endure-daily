@@ -65,7 +65,7 @@ export function BottomNav() {
                 resetOnboarding();
                 setMoreOpen(false);
               }}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-medium text-muted transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2"
             >
               <RotateCcw size={15} /> Reset Onboarding
             </button>

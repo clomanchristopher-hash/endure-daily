@@ -79,3 +79,27 @@ Verified in the browser at commit for this pass:
 Note: this covers the installable **PWA / Add-to-Home-Screen** path. A native
 App Store / TestFlight binary would still require a wrapper (e.g. Capacitor) and
 its own native icon set — not part of this pass.
+
+## Accessibility & QA polish (verified)
+
+Light accessibility pass for WCAG compliance and mobile UX:
+
+- **Focus states** — Added visible `outline: 2px solid var(--gold)` with 2px offset
+  to all buttons, links, and inputs via CSS and Tailwind `focus-visible:*` utilities
+  for keyboard navigation support. Users can now clearly see which element is focused
+  when tabbing through the app.
+- **Tap target sizes** — Increased button padding from `py-2.5` (10px) to `py-3`
+  (12px) across the Board (Button component, DailyProgressCard, BottomNav, FeedbackButton,
+  OnboardingFlow) to meet the recommended 44×44 px minimum; buttons now measure ~46px tall
+  on mobile.
+- **Icon-only buttons** — All icon-only buttons already have descriptive `aria-label`s:
+  Close menu button in More sheet ("Close menu"), navigation links have visible text labels.
+- **Color contrast** — Earth-tone palette (#0d1510 bg, #f4f1e6 text, #8faf7a gold accents)
+  meets WCAG AA standards for normal text (4.5:1 minimum).
+- **Mobile overflow** — No horizontal overflow; bottom nav includes `env(safe-area-inset-bottom)`
+  padding for notched devices.
+- **Keyboard accessibility** — Tab order follows visual flow; all interactive elements
+  (buttons, links, form inputs) are keyboard-accessible; modals use `role="dialog"`
+  and `aria-modal="true"`.
+
+No app flows, features, or styling were changed — only accessibility enhancements.

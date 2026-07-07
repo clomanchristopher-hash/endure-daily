@@ -32,7 +32,7 @@ export function FeedbackButton({ className = "" }: { className?: string }) {
       </p>
       <a
         href={mailtoHref}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-surface-raised px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-border-subtle"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-border-subtle focus-visible:outline-2 focus-visible:outline-[var(--gold)] focus-visible:outline-offset-2"
       >
         <Mail size={16} />
         Send Feedback

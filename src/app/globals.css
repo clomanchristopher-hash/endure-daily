@@ -149,3 +149,22 @@ h1, h2, h3, .font-serif {
 .admin-input:focus {
   border-color: color-mix(in srgb, var(--gold) 50%, transparent);
 }
+
+/* Visible focus states for keyboard navigation. */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
