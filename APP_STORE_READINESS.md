@@ -2,6 +2,11 @@
 
 Status notes for reviewers and the team on monetization and premium content.
 
+**Store listing copy:** see [`STORE_LISTING.md`](STORE_LISTING.md) for the app
+name, subtitle, promotional text, full description, keywords, category
+recommendation, "What's New", App Review notes, screenshot captions, and the
+TestFlight invite message.
+
 ## Payments
 
 - **Payments are not active in this version.** Endure Daily is fully usable for
