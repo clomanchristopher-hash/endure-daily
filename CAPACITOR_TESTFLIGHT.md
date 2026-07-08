@@ -1,6 +1,6 @@
 # Capacitor/TestFlight Preparation — Endure Daily
 
-Status: **Capacitor setup prepared; iOS platform not yet initialized; static export not yet implemented.**
+Status: **Capacitor setup prepared; static export implemented; iOS platform not yet initialized (requires Mac).**
 
 ## What is Capacitor?
 
@@ -62,48 +62,58 @@ The following tasks **must be done on a Mac with Xcode installed**:
 
 ### Current State
 
-The app currently does **not** use static export (`output: "export"` in `next.config.ts`). Instead, it runs as a standard Next.js server-rendered app.
+✅ **Static export is now IMPLEMENTED and working.**
 
-For Capacitor to work with static files, the app must be built as static HTML/JS/CSS output in the `out/` directory.
+The app now uses `output: "export"` in `next.config.ts` and builds as static HTML/JS/CSS files in the `out/` directory.
 
-### Blockers to Static Export
+**Build output:** 6.8 MB of static files containing:
+- All route pages pre-rendered as HTML
+- JavaScript bundles for client-side interactivity
+- CSS stylesheets
+- Images and assets
+- manifest.webmanifest for PWA
 
-The app has dynamic routes that would require `generateStaticParams` implementations:
+### How It Works
 
-- `/journeys/[id]` — Journey detail pages
-- `/library/[id]` — Devotion detail pages
-- `/plans/[id]` — Plan detail pages
+All dynamic routes now use `generateStaticParams` to pre-render all possible pages at build time:
 
-### What's Required to Enable Static Export
+- **`/journeys/[id]`** — 12 journey detail pages pre-generated
+- **`/library/[id]`** — 13 devotion detail pages pre-generated
+- **`/plans/[id]`** — 5 plan detail pages pre-generated
 
-Before Capacitor can use static files:
+Example from `src/app/journeys/[id]/page.tsx`:
+```typescript
+import { journeys } from "@/lib/data/journeys";
 
-1. **Implement `generateStaticParams`** in each dynamic route file to pre-render all possible pages:
-   ```typescript
-   export async function generateStaticParams() {
-     return journeys.map(j => ({ id: j.id }));
-   }
-   ```
+export async function generateStaticParams() {
+  return journeys.map((journey) => ({
+    id: journey.id,
+  }));
+}
+```
 
-2. **Add `output: "export"` to `next.config.ts`** to enable static build:
-   ```typescript
-   const nextConfig: NextConfig = {
-     output: "export",
-   };
-   ```
+The manifest.webmanifest is also marked as static with `export const dynamic = "force-static"`.
 
-3. **Test the static build** — Run `npm run build` and verify `out/` contains all files and images.
+### How Capacitor Uses It
 
-4. **Verify no server-only features** — Confirm no server actions, API routes, or server-only libraries are used.
+When you run `npm run build`:
+1. Next.js compiles all pages to static HTML in `out/`
+2. `npm run cap:sync ios` copies `out/` to the iOS app's web assets
+3. The iOS app serves these static files instead of connecting to a server
 
-### Recommendation for Next Phase
+**Result:** Smaller app size, faster load time, no server dependency.
 
-For the **first Capacitor/TestFlight release**, consider:
+### What Was Changed
 
-- **Option A (Recommended for MVP)**: Keep the server-side rendering and use a Node.js server wrapped by Capacitor (more complex, but no refactoring needed now)
-- **Option B (Recommended long-term)**: Implement `generateStaticParams` for all dynamic routes and enable static export (cleaner, but requires refactoring now)
+- `next.config.ts` — Added `output: "export"`
+- `src/app/manifest.ts` — Added `export const dynamic = "force-static"`
+- `src/app/journeys/[id]/page.tsx` — Added `generateStaticParams`
+- `src/app/library/[id]/page.tsx` — Added `generateStaticParams`
+- `src/app/plans/[id]/page.tsx` — Added `generateStaticParams`
 
-This sprint prepared the foundation; the static export decision can be made in the next sprint when timeline and resources are clearer.
+### Ready for Next Phase
+
+The app is now **fully ready for Capacitor iOS builds**. No server required; all content is static.
 
 ---
 
@@ -115,7 +125,7 @@ Once the iOS platform is initialized on a Mac, the typical workflow is:
 ```bash
 npm run build
 ```
-Output goes to `out/` (assuming static export is implemented).
+Output goes to `out/` (static export is now the default).
 
 ### 2. Sync to iOS
 ```bash

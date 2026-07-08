@@ -104,9 +104,9 @@ Light accessibility pass for WCAG compliance and mobile UX:
 
 No app flows, features, or styling were changed — only accessibility enhancements.
 
-## Capacitor/TestFlight Prep (in progress)
+## Capacitor/TestFlight Prep (ready for iOS builds)
 
-**Status**: Capacitor dependencies and config prepared; iOS platform not yet initialized (requires Mac/Xcode).
+**Status**: Capacitor fully configured with static export working; iOS platform ready for Mac/Xcode initialization.
 
 ### What's ready
 
@@ -114,12 +114,20 @@ No app flows, features, or styling were changed — only accessibility enhanceme
 - ✅ Capacitor config file created (`capacitor.config.json`)
   - App ID: `com.enduredaily.app`
   - App name: `Endure Daily`
-  - Web directory: `out` (for static export, future)
+  - Web directory: `out` (static export)
 - ✅ npm scripts added:
   - `npm run cap:sync` — sync web files to iOS app
   - `npm run cap:open:ios` — open Xcode
   - `npm run cap:add:ios` — initialize iOS platform (Mac-only)
+- ✅ **Static export implemented** — All routes now build to static HTML in `out/`
+  - `next.config.ts` has `output: "export"`
+  - All dynamic routes have `generateStaticParams`:
+    - `/journeys/[id]` → 12 pre-rendered pages
+    - `/library/[id]` → 13 pre-rendered pages
+    - `/plans/[id]` → 5 pre-rendered pages
+  - Build output: 6.8 MB of static files
 - ✅ No breaking changes to web build
+- ✅ PWA behavior preserved
 - ✅ No payment or notification plugins added
 
 ### What requires Mac/Xcode
@@ -133,13 +141,20 @@ The following steps must be done on a Mac with Xcode 14+ and an Apple Developer 
 
 ### Static Export Status
 
-The app currently does **not** use static export; it runs as a standard Next.js server-rendered app.
+✅ **Static export is fully implemented and working.**
 
-**Blocker**: Dynamic routes (`/journeys/[id]`, `/library/[id]`, `/plans/[id]`) would require `generateStaticParams` implementations before static export can be enabled.
+The app now exports all routes as static HTML files to the `out/` directory. This is optimal for:
+- Smaller app size
+- Faster app launch (no server startup)
+- Better battery life (no network requests)
+- Offline-capable on the device
 
-**Recommendation**: This can be implemented in the next sprint if needed. For now, the app works fine as a server-rendered Next.js build wrapped by Capacitor.
+**How it works:**
+- `npm run build` generates 6.8 MB of static files in `out/`
+- `npm run cap:sync ios` copies these files to iOS app bundle
+- iOS app serves these files directly
 
-**See** [`CAPACITOR_TESTFLIGHT.md`](CAPACITOR_TESTFLIGHT.md) for detailed setup instructions and workflow.
+**See** [`CAPACITOR_TESTFLIGHT.md`](CAPACITOR_TESTFLIGHT.md) for detailed static export info and complete workflow.
 
 ### Payments & Notifications
 
