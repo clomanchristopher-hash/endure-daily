@@ -1,0 +1,12 @@
+{
+  "appId": "com.enduredaily.app",
+  "appName": "Endure Daily",
+  "webDir": "out",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "plugins": {}
+}

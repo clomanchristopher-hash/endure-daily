@@ -77,8 +77,8 @@ Verified in the browser at commit for this pass:
   errors; lint and build pass.
 
 Note: this covers the installable **PWA / Add-to-Home-Screen** path. A native
-App Store / TestFlight binary would still require a wrapper (e.g. Capacitor) and
-its own native icon set — not part of this pass.
+App Store / TestFlight binary is now being prepared via Capacitor (see
+**Capacitor/TestFlight Prep** below).
 
 ## Accessibility & QA polish (verified)
 
@@ -103,3 +103,46 @@ Light accessibility pass for WCAG compliance and mobile UX:
   and `aria-modal="true"`.
 
 No app flows, features, or styling were changed — only accessibility enhancements.
+
+## Capacitor/TestFlight Prep (in progress)
+
+**Status**: Capacitor dependencies and config prepared; iOS platform not yet initialized (requires Mac/Xcode).
+
+### What's ready
+
+- ✅ Capacitor packages installed (`@capacitor/core`, `@capacitor/cli`, `@capacitor/ios`)
+- ✅ Capacitor config file created (`capacitor.config.json`)
+  - App ID: `com.enduredaily.app`
+  - App name: `Endure Daily`
+  - Web directory: `out` (for static export, future)
+- ✅ npm scripts added:
+  - `npm run cap:sync` — sync web files to iOS app
+  - `npm run cap:open:ios` — open Xcode
+  - `npm run cap:add:ios` — initialize iOS platform (Mac-only)
+- ✅ No breaking changes to web build
+- ✅ No payment or notification plugins added
+
+### What requires Mac/Xcode
+
+The following steps must be done on a Mac with Xcode 14+ and an Apple Developer Account:
+
+1. Run `npm run cap:add:ios` to initialize the iOS platform
+2. Set up code signing and provisioning profiles in Xcode
+3. Test on simulator or real device
+4. Archive and upload to App Store Connect / TestFlight
+
+### Static Export Status
+
+The app currently does **not** use static export; it runs as a standard Next.js server-rendered app.
+
+**Blocker**: Dynamic routes (`/journeys/[id]`, `/library/[id]`, `/plans/[id]`) would require `generateStaticParams` implementations before static export can be enabled.
+
+**Recommendation**: This can be implemented in the next sprint if needed. For now, the app works fine as a server-rendered Next.js build wrapped by Capacitor.
+
+**See** [`CAPACITOR_TESTFLIGHT.md`](CAPACITOR_TESTFLIGHT.md) for detailed setup instructions and workflow.
+
+### Payments & Notifications
+
+- **Payments remain inactive**: No Stripe, Apple IAP, or RevenueCat in this version.
+- **Push notifications remain inactive**: No permission requests or push APIs implemented.
+- Both can be added in future releases after the native wrapper is stable.

@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cap:sync": "npx cap sync",
+    "cap:open:ios": "npx cap open ios",
+    "cap:add:ios": "npx cap add ios"
   },
   "dependencies": {
+    "@capacitor/core": "^7.0.0",
     "@supabase/supabase-js": "^2.110.0",
     "lucide-react": "^1.23.0",
     "next": "16.2.9",
@@ -16,6 +20,8 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
